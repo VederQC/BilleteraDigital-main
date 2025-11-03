@@ -12,7 +12,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3309/ms_auth_service
     username: root
-    password: 124578369scar@
+    password: 123456
 eureka:
   client:
     service-url:

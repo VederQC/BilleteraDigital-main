@@ -1,67 +1,84 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
-import { MaterialModule } from 'src/app/material.module';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTableModule } from '@angular/material/table';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { WalletService, Wallet } from '../../../providers/services/wallet/wallet.service';
+import { AuthService } from '../../../providers/services/auth/auth.service';
+import { jwtDecode } from 'jwt-decode';
+import { WalletDialogComponent } from '../../../providers/services/wallet/wallet-dialog.component';
+import { MatIconModule } from '@angular/material/icon';
 
-// table 1
-export interface productsData {
-  id: number;
-  imagePath: string;
-  uname: string;
-  budget: number;
-  priority: string;
-}
-
-const PRODUCT_DATA: productsData[] = [
-  {
-    id: 1,
-    imagePath: 'assets/images/products/product-1.png',
-    uname: 'iPhone 13 pro max-Pacific Blue-128GB storage',
-    budget: 180,
-    priority: 'confirmed',
-  },
-  {
-    id: 2,
-    imagePath: 'assets/images/products/product-2.png',
-    uname: 'Apple MacBook Pro 13 inch-M1-8/256GB-space',
-    budget: 90,
-    priority: 'cancelled',
-  },
-  {
-    id: 3,
-    imagePath: 'assets/images/products/product-3.png',
-    uname: 'PlayStation 5 DualSense Wireless Controller',
-    budget: 120,
-    priority: 'rejected',
-  },
-  {
-    id: 4,
-    imagePath: 'assets/images/products/product-4.png',
-    uname: 'Amazon Basics Mesh, Mid-Back, Swivel Office',
-    budget: 160,
-    priority: 'confirmed',
-  },
-];
 
 @Component({
   selector: 'app-tables',
+  standalone: true,
+  templateUrl: './tables.component.html',
+  styleUrls: ['./tables.component.css'],
   imports: [
-    MatTableModule,
     CommonModule,
     MatCardModule,
-    MaterialModule,
-    MatIconModule,
-    MatMenuModule,
     MatButtonModule,
-  ],
-  templateUrl: './tables.component.html',
+    MatTableModule,
+    MatDialogModule,
+    MatIconModule
+  ]
 })
-export class AppTablesComponent {
-  // table 1
-  displayedColumns1: string[] = ['assigned', 'name', 'priority', 'budget'];
-  dataSource1 = PRODUCT_DATA;
+export class AppTablesComponent implements OnInit {
+  wallet?: Wallet;
+  userId: number | null = null;
+
+  displayedColumns = ['id', 'userId', 'balance', 'currency', 'createdAt', 'actions'];
+
+  constructor(
+    private walletService: WalletService,
+    private authService: AuthService,
+    private dialog: MatDialog
+  ) {}
+
+  ngOnInit(): void {
+    this.loadWallet();
+  }
+
+  private loadWallet(): void {
+    const token = this.authService.getToken();
+    if (!token) return;
+
+    const decoded: any = jwtDecode(token);
+    this.userId = Number(decoded.id || decoded.sub);
+
+    if (this.userId && !isNaN(this.userId)) {
+      this.walletService.getWalletByUserId$(this.userId).subscribe({
+        next: (data) => (this.wallet = data),
+        error: () => (this.wallet = undefined)
+      });
+    }
+  }
+
+  openCreateDialog(): void {
+    const dialogRef = this.dialog.open(WalletDialogComponent, {
+      width: '400px',
+      data: { userId: this.userId }
+    });
+
+    dialogRef.afterClosed().subscribe((created) => {
+      if (created) this.loadWallet(); // recarga la tabla si se creó
+    });
+  }
+
+  deleteWallet(): void {
+    if (!this.userId) return;
+
+    this.walletService.deleteWalletByUserId$(this.userId).subscribe({
+      next: () => {
+        alert('🗑️ Billetera eliminada correctamente');
+        this.wallet = undefined;
+      },
+      error: (err) => {
+        console.error(err);
+        alert('❌ Error al eliminar billetera');
+      }
+    });
+  }
 }

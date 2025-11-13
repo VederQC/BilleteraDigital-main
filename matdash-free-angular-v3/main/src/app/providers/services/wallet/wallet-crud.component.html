@@ -1,0 +1,33 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+    <mat-card-title>Gestión de Billetera</mat-card-title>
+
+    <form [formGroup]="walletForm" (ngSubmit)="onSubmit()" class="form">
+      <div class="row">
+        <mat-form-field appearance="outline" class="w-50">
+          <mat-label>ID de Usuario</mat-label>
+          <input matInput type="number" formControlName="userId" placeholder="Ej. 3">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-50">
+          <mat-label>Moneda</mat-label>
+          <input matInput formControlName="currency" placeholder="Ej. pen">
+        </mat-form-field>
+      </div>
+
+      <div class="m-t-16">
+        <button mat-raised-button color="primary" type="submit">Crear Wallet</button>
+        <button mat-raised-button color="warn" type="button" (click)="onDelete()">Eliminar Wallet</button>
+      </div>
+    </form>
+
+    <div *ngIf="wallet" class="m-t-24">
+      <h3>✅ Wallet creada</h3>
+      <p><strong>ID:</strong> {{ wallet.id }}</p>
+      <p><strong>Usuario:</strong> {{ wallet.userId }}</p>
+      <p><strong>Balance:</strong> {{ wallet.balance | currency:wallet.currency.toUpperCase() }}</p>
+      <p><strong>Moneda:</strong> {{ wallet.currency | uppercase }}</p>
+      <p><strong>Creada el:</strong> {{ wallet.createdAt | date:'medium' }}</p>
+    </div>
+  </mat-card-content>
+</mat-card>

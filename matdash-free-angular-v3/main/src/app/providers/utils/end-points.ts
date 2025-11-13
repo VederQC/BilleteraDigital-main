@@ -1,5 +1,5 @@
 export const END_POINTS = {
-  category: 'categorias',
+  category: 'wallets',
   login: 'auth/login',
 
 };

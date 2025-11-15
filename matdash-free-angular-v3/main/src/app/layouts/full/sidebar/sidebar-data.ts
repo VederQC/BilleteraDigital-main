@@ -244,6 +244,12 @@ export const navItems: NavItem[] = [
     route: '/ui-components/tables',
   },
   {
+    displayName: 'Transacciones',
+    iconName: 'solar:bill-line-duotone',
+    route: '/ui-components/transacciones',
+  },
+
+  {
     displayName: 'Expansion Panel',
     iconName: 'solar:inbox-archive-line-duotone',
     route: 'https://matdash-angular-main.netlify.app/ui-components/expansion',
@@ -935,5 +941,5 @@ export const navItems: NavItem[] = [
     chipClass: 'bg-light-secondary text-secondary',
     chipContent: 'PRO',
   },
-  
+
 ];

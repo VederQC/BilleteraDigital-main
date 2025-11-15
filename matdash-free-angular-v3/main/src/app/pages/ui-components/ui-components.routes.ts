@@ -41,6 +41,14 @@ export const UiComponentsRoutes: Routes = [
         path: 'tables',
         component: AppTablesComponent,
       },
+      {
+        path: 'transacciones',
+        loadComponent: () =>
+          import('../ui-components/transactions/transactions.component').then(
+            (m) => m.TransactionsComponent
+          ),
+      },
+
     ],
   },
 ];

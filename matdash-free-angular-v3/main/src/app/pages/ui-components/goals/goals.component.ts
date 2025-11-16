@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-topstrip',
+  selector: 'app-goals',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './topstrip.component.html',
+  templateUrl: './goals.component.html',
+  styleUrls: ['./goals.component.css']
 })
-export class AppTopstripComponent {}
+export class GoalsComponent {}

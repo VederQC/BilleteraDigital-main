@@ -1,54 +1,50 @@
 import { Routes } from '@angular/router';
 
-// ui
-import { AppBadgeComponent } from './badge/badge.component';
-import { AppChipsComponent } from './chips/chips.component';
-import { AppListsComponent } from './lists/lists.component';
-import { AppMenuComponent } from './menu/menu.component';
-import { AppTooltipsComponent } from './tooltips/tooltips.component';
-import { AppFormsComponent } from './forms/forms.component';
-import { AppTablesComponent } from './tables/tables.component';
-
 export const UiComponentsRoutes: Routes = [
   {
     path: '',
     children: [
       {
-        path: 'badge',
-        component: AppBadgeComponent,
+        path: '',
+        redirectTo: 'wallet',
+        pathMatch: 'full',
       },
+
+      // 🟢 WALLET
       {
-        path: 'chips',
-        component: AppChipsComponent,
-      },
-      {
-        path: 'lists',
-        component: AppListsComponent,
-      },
-      {
-        path: 'menu',
-        component: AppMenuComponent,
-      },
-      {
-        path: 'tooltips',
-        component: AppTooltipsComponent,
-      },
-      {
-        path: 'forms',
-        component: AppFormsComponent,
-      },
-      {
-        path: 'tables',
-        component: AppTablesComponent,
-      },
-      {
-        path: 'transacciones',
+        path: 'wallet',
         loadComponent: () =>
-          import('../ui-components/transactions/transactions.component').then(
+          import('src/app/pages/ui-components/tables/tables.component').then(
+            (m) => m.AppTablesComponent
+          ),
+      },
+
+      // 🟢 TRANSACTIONS (nombre correcto)
+      {
+        path: 'transactions',
+        loadComponent: () =>
+          import('./transactions/transactions.component').then(
             (m) => m.TransactionsComponent
           ),
       },
 
+      // 🟢 EVENTS
+      {
+        path: 'events',
+        loadComponent: () =>
+          import('./events/events.component').then(
+            (m) => m.EventsComponent
+          ),
+      },
+
+      // 🟢 GOALS
+      {
+        path: 'goals',
+        loadComponent: () =>
+          import('./goals/goals.component').then(
+            (m) => m.GoalsComponent
+          ),
+      },
     ],
   },
 ];

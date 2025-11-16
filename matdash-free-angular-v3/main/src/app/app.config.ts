@@ -26,9 +26,9 @@ import { NgScrollbarModule } from 'ngx-scrollbar';
 //Import all material modules
 import { MaterialModule } from './material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import {urlInterceptor} from "./interceptors/url.interceptor";
-import {tokenInterceptor} from "./interceptors/token.interceptor";
-import {errorInterceptor} from "./interceptors/error.interceptor";
+import {urlInterceptor} from "./core/interceptors/url.interceptor";
+import {tokenInterceptor} from "./core/interceptors/token.interceptor";
+import {errorInterceptor} from "./core/interceptors/error.interceptor";
 
 export const appConfig: ApplicationConfig = {
   providers: [

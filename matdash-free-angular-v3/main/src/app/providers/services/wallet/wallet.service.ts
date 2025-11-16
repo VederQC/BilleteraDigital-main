@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { EntityDataService } from '../../utils/entity-data';
 
 export interface Wallet {
   id: number;
@@ -13,22 +12,24 @@ export interface Wallet {
 }
 
 @Injectable({ providedIn: 'root' })
-export class WalletService extends EntityDataService<Wallet> {
-  constructor(protected override httpClient: HttpClient) {
-    super(httpClient, 'wallets');
+export class WalletService {
+
+  private readonly baseUrl = `${environment.apiUrl}/wallets`;
+
+  constructor(private http: HttpClient) {}
+
+  /** Obtener wallet por userId */
+  getWalletByUserId$(userId: number): Observable<Wallet> {
+    return this.http.get<Wallet>(`${this.baseUrl}/user/${userId}`);
   }
 
-  // Nuevo método para obtener la wallet por userId
-  public getWalletByUserId$(userId: number): Observable<Wallet> {
-    return this.httpClient.get<Wallet>(`${environment.apiUrl}/wallets/user/${userId}`);
+  /** Crear wallet */
+  createWallet$(wallet: Partial<Wallet>): Observable<Wallet> {
+    return this.http.post<Wallet>(`${this.baseUrl}`, wallet);
   }
-  public createWallet$(wallet: Partial<Wallet>): Observable<Wallet> {
-    return this.httpClient.post<Wallet>('wallets', wallet);
-  }
-  
 
-  // ✅ 4. Eliminar wallet por usuario
-  public deleteWalletByUserId$(userId: number): Observable<void> {
-    return this.httpClient.delete<void>(`wallets/user/${userId}`);
+  /** Eliminar wallet */
+  deleteWalletByUserId$(userId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/user/${userId}`);
   }
 }

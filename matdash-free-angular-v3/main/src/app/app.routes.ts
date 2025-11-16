@@ -1,17 +1,44 @@
 import { Routes } from '@angular/router';
-import { BlankComponent } from './layouts/blank/blank.component';
 import { FullComponent } from './layouts/full/full.component';
+import { BlankComponent } from './layouts/blank/blank.component';
+import { HomeComponent } from './public/home/home.component';
+import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
+
+  // ⚡ Cuando entras a '/', manda al HOME
   {
     path: '',
-    component: FullComponent,
+    redirectTo: 'home',
+    pathMatch: 'full',
+  },
+
+  // 1️⃣ HOME PÚBLICO
+  {
+    path: 'home',
+    component: HomeComponent,
+  },
+
+  // 2️⃣ LOGIN / REGISTER
+  {
+    path: 'auth',
+    component: BlankComponent,
     children: [
       {
         path: '',
-        redirectTo: '/dashboard',
-        pathMatch: 'full',
+        loadChildren: () =>
+          import('./auth/authentication/authentication.routes')
+            .then((m) => m.AuthenticationRoutes),
       },
+    ],
+  },
+
+  // 3️⃣ ZONA PRIVADA (protegida)
+  {
+    path: 'app',
+    component: FullComponent,
+    canActivate: [AuthGuard],
+    children: [
       {
         path: 'dashboard',
         loadChildren: () =>
@@ -20,34 +47,21 @@ export const routes: Routes = [
       {
         path: 'ui-components',
         loadChildren: () =>
-          import('./pages/ui-components/ui-components.routes').then(
-            (m) => m.UiComponentsRoutes
-          ),
+          import('./pages/ui-components/ui-components.routes')
+            .then((m) => m.UiComponentsRoutes),
       },
-
-
       {
-        path: 'extra',
-        loadChildren: () =>
-          import('./pages/extra/extra.routes').then((m) => m.ExtraRoutes),
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
       },
     ],
   },
-  {
-    path: '',
-    component: BlankComponent,
-    children: [
-      {
-        path: 'authentication',
-        loadChildren: () =>
-          import('./pages/authentication/authentication.routes').then(
-            (m) => m.AuthenticationRoutes
-          ),
-      },
-    ],
-  },
+
+  // 4️⃣ NOT FOUND → HOME
   {
     path: '**',
-    redirectTo: 'authentication/error',
+    redirectTo: 'home',
   },
 ];
+

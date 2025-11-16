@@ -7,7 +7,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { WalletService, Wallet } from '../../../providers/services/wallet/wallet.service';
 import { AuthService } from '../../../providers/services/auth/auth.service';
 import { jwtDecode } from 'jwt-decode';
-import { WalletDialogComponent } from '../../../providers/services/wallet/wallet-dialog.component';
+import { WalletDialogComponent } from '../../ui-components/wallet/wallet-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
 
 

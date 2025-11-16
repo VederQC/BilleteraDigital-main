@@ -1,0 +1,90 @@
+.container {
+  padding: 20px;
+}
+
+h2 {
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.table {
+  width: 100%;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.color-box {
+  display: inline-block;
+  width: 30px;
+  height: 18px;
+  border-radius: 4px;
+  margin-right: 8px;
+  border: 1px solid #ccc;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* SUBCATEGORÍAS (botón verde) */
+button.action.sub {
+  background: #009688;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button.action.sub:hover {
+  background: #00796b;
+  transform: translateY(-1px);
+}
+
+/* ACTUALIZAR */
+button.action.update {
+  background: #5e6cff;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+button.action.update:hover {
+  background: #4b57e0;
+}
+
+/* ELIMINAR */
+button.action.delete {
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+button.action.delete:hover {
+  background: #e04444;
+}
+
+
+/* Hover */
+button.action.delete:hover {
+  background: #e04444;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
+
+/* Click */
+button.action.delete:active {
+  transform: scale(0.96);
+}

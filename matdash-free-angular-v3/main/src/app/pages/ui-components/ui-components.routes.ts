@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import {AppMenuComponent} from "./menu/menu.component";
+import {AppSubcategoriasComponent} from "./subcategorias/subcategorias.component";
 
 export const UiComponentsRoutes: Routes = [
   {
@@ -45,6 +47,20 @@ export const UiComponentsRoutes: Routes = [
             (m) => m.GoalsComponent
           ),
       },
+      {
+        path: 'menu',
+        loadComponent: () =>
+          import('./menu/menu.component').then(
+            (m) => m.AppMenuComponent
+          ),
+      },
+      {
+        path: 'subcategorias',
+        loadComponent: () =>
+          import('./subcategorias/subcategorias.component')
+            .then((m) => m.AppSubcategoriasComponent),
+      },
+
     ],
   },
 ];

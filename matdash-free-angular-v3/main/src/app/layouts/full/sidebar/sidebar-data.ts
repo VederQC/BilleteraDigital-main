@@ -27,5 +27,10 @@ export const navItems: NavItem[] = [
     displayName: 'Objetivos',
     iconName: 'solar:target-line-duotone',
     route: '/app/ui-components/goals'
+  },
+  {
+    displayName: 'Categorías',
+    iconName: 'solar:layers-minimalistic-bold-duotone',
+    route: '/app/ui-components/menu'
   }
 ];

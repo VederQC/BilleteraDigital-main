@@ -1,4 +1,114 @@
-<div class="page-container">
-  <h2 class="title">Eventos</h2>
-  <p>Gestión de eventos próximamente.</p>
+<div class="container">
+
+  <div class="header">
+    <h2>Eventos</h2>
+
+    <!-- Botón AGREGAR -->
+    <button mat-raised-button color="primary" (click)="openDialog()">
+      + Agregar Evento
+    </button>
+  </div>
+
+  <!-- DIALOGO INTERNO (CREAR / EDITAR / AGREGAR GASTO) -->
+  <ng-template #dialogTemplate>
+    <div class="dialog-container">
+
+      <h2 class="dialog-title">
+        {{ editingId === null ? 'Nuevo Evento' : 'Editar Evento' }}
+      </h2>
+
+      <div class="dialog-body">
+
+        <mat-form-field appearance="fill" class="field">
+          <mat-label>Nombre del Evento</mat-label>
+          <input matInput [(ngModel)]="form.name">
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="field">
+          <mat-label>Descripción</mat-label>
+          <textarea matInput rows="3" [(ngModel)]="form.description"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="field">
+          <mat-label>Presupuesto</mat-label>
+          <input matInput type="number" [(ngModel)]="form.budget">
+        </mat-form-field>
+
+        <div class="date-row">
+
+          <mat-form-field appearance="fill" class="field">
+            <mat-label>Fecha Inicio</mat-label>
+            <input matInput [matDatepicker]="dp1" [(ngModel)]="form.startDate">
+            <mat-datepicker-toggle matSuffix [for]="dp1"></mat-datepicker-toggle>
+            <mat-datepicker #dp1></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill" class="field">
+            <mat-label>Fecha Fin</mat-label>
+            <input matInput [matDatepicker]="dp2" [(ngModel)]="form.endDate">
+            <mat-datepicker-toggle matSuffix [for]="dp2"></mat-datepicker-toggle>
+            <mat-datepicker #dp2></mat-datepicker>
+          </mat-form-field>
+
+        </div>
+
+      </div>
+
+      <div class="dialog-actions">
+        <button mat-button (click)="dialogRef.close()">Cancelar</button>
+        <button mat-flat-button color="primary" (click)="saveEvent()">
+          {{ editingId === null ? 'Guardar' : 'Actualizar' }}
+        </button>
+      </div>
+
+    </div>
+  </ng-template>
+
+  <!-- TABLA -->
+  <table mat-table [dataSource]="events" class="mat-elevation-z8 table">
+
+    <!-- Nombre -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Evento</th>
+      <td mat-cell *matCellDef="let e">{{ e.name }}</td>
+    </ng-container>
+
+    <!-- Presupuesto -->
+    <ng-container matColumnDef="budget">
+      <th mat-header-cell *matHeaderCellDef>Presupuesto</th>
+      <td mat-cell *matCellDef="let e">S/ {{ e.budget }}</td>
+    </ng-container>
+
+    <!-- Gastado -->
+    <ng-container matColumnDef="spent">
+      <th mat-header-cell *matHeaderCellDef>Gastado</th>
+      <td mat-cell *matCellDef="let e">S/ {{ e.spent }}</td>
+    </ng-container>
+
+    <!-- Inicio -->
+    <ng-container matColumnDef="startDate">
+      <th mat-header-cell *matHeaderCellDef>Inicio</th>
+      <td mat-cell *matCellDef="let e">{{ e.startDate }}</td>
+    </ng-container>
+
+    <!-- Fin -->
+    <ng-container matColumnDef="endDate">
+      <th mat-header-cell *matHeaderCellDef>Fin</th>
+      <td mat-cell *matCellDef="let e">{{ e.endDate }}</td>
+    </ng-container>
+
+    <!-- Acciones -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Acciones</th>
+      <td mat-cell *matCellDef="let e">
+        <button class="action sub" (click)="addSpent(e)">+ Gasto</button>
+        <button class="action update" (click)="openEditDialog(e)">Editar</button>
+        <button class="action delete" (click)="deleteEvent(e.id)">Eliminar</button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+  </table>
 </div>

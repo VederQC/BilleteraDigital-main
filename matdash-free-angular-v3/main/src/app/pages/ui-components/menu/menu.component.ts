@@ -15,7 +15,7 @@ import { Category } from 'src/app/providers/models/category.model';
 import { AuthService } from 'src/app/providers/services/auth/auth.service';
 
 import { Router, RouterOutlet } from '@angular/router';  // ⭐ AÑADIDO AQUI
-import { CategoryService } from 'src/app/providers/services/category/ category.service';
+import { CategoryService } from 'src/app/providers/services/category/category.service';
 
 @Component({
   selector: 'app-categories',
@@ -133,9 +133,9 @@ export class AppMenuComponent implements OnInit {
   }
 
   // ⭐⭐⭐ IR A SUBCATEGORÍAS ⭐⭐⭐
-  irASubcategorias(id: number) {
-    this.router.navigate(['/app/ui-components/subcategorias'], {
-      queryParams: { categoryId: id }
-    });
-  }
+ irASubcategorias(id: number) {
+  this.router.navigate(['/app/ui-components/subcategorias'], {
+    queryParams: { categoryId: id }
+  });
+}
 }

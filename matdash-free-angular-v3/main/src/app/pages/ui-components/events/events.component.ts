@@ -10,8 +10,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 
 import { FormsModule } from '@angular/forms';
+import { jwtDecode } from 'jwt-decode';
+
 import { Event } from 'src/app/providers/models/event.model';
 import { EventService } from 'src/app/providers/services/events/events.service';
+import { AuthService } from 'src/app/providers/services/auth/auth.service';
 
 @Component({
   selector: 'app-events',
@@ -37,7 +40,8 @@ export class EventsComponent implements OnInit {
   events: Event[] = [];
   editingId: number | null = null;
 
-  userId = 1;
+  // 🔥 YA NO HARDCODEADO
+  userId!: number;
 
   form = {
     name: '',
@@ -51,14 +55,34 @@ export class EventsComponent implements OnInit {
 
   constructor(
     private eventService: EventService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.loadEvents();
+    this.loadUserId();   // ⭐ Obtiene el verdadero ID del usuario logueado
+    this.loadEvents();   // ⭐ Carga eventos filtrados por usuario real
   }
 
+  // ============================================================
+  // 🔥 OBTENER ID DEL USUARIO DESDE EL TOKEN JWT
+  // ============================================================
+  loadUserId(): void {
+    const token = this.authService.getToken();
+    if (!token) return;
+
+    const decoded: any = jwtDecode(token);
+    this.userId = Number(decoded.id || decoded.sub);
+
+    console.log("USER ID DESDE TOKEN:", this.userId);
+  }
+
+  // ============================================================
+  // 🔹 Cargar eventos
+  // ============================================================
   loadEvents(): void {
+    if (!this.userId) return;
+
     this.eventService.getEventsByUser$(this.userId).subscribe({
       next: (list) => (this.events = list)
     });
@@ -126,6 +150,7 @@ export class EventsComponent implements OnInit {
       });
   }
 
+  // 🗑️ Eliminar
   deleteEvent(id: number): void {
     if (!confirm('¿Eliminar este evento?')) return;
 

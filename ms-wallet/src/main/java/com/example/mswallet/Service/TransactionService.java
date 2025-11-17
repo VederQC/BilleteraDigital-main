@@ -27,7 +27,7 @@ public class TransactionService {
     private final WalletRepository walletRepository;
     private final CategoryFeignClient categoryClient;
     private final EventFeignClient eventClient;
-    private final GoalFeignClient goalClient;   // 🟢 NUEVO
+    private final GoalFeignClient goalClient;
 
     @Autowired
     public TransactionService(
@@ -35,15 +35,18 @@ public class TransactionService {
             WalletRepository walletRepository,
             CategoryFeignClient categoryClient,
             EventFeignClient eventClient,
-            GoalFeignClient goalClient   // 🟢 NUEVO
+            GoalFeignClient goalClient
     ) {
         this.transactionRepository = transactionRepository;
         this.walletRepository = walletRepository;
         this.categoryClient = categoryClient;
         this.eventClient = eventClient;
-        this.goalClient = goalClient;  // 🟢 NUEVO
+        this.goalClient = goalClient;
     }
 
+    // =====================================================================
+    // CREATE
+    // =====================================================================
     @Transactional
     public TransactionResponseDTO createTransaction(TransactionRequestDTO request) {
 
@@ -51,8 +54,7 @@ public class TransactionService {
         Wallet wallet = walletRepository.findByUserId(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet no encontrada"));
 
-        // 2. Categoría y Subcategoría
-        // 2. Categoría y Subcategoría (permitir null)
+        // 2. Obtener categoría / subcategoría (permitir null)
         CategoryDTO category = null;
         SubcategoryDTO subcategory = null;
 
@@ -75,11 +77,14 @@ public class TransactionService {
             }
         }
 
-
         // 3. Evento (opcional)
         EventDTO event = null;
         if (request.getEventId() != null) {
-            event = eventClient.getEventById(request.getEventId());
+            try {
+                event = eventClient.getEventById(request.getEventId());
+            } catch (Exception e) {
+                log.warn("Evento no encontrado: {}", request.getEventId());
+            }
         }
 
         // 4. Crear Transacción
@@ -96,7 +101,7 @@ public class TransactionService {
 
         transaction = transactionRepository.save(transaction);
 
-        // 5. Actualizar balance de Wallet
+        // 5. Actualizar balance
         if (request.getType() == Transaction.TransactionType.INCOME) {
             wallet.setBalance(wallet.getBalance().add(request.getAmount()));
         } else {
@@ -104,41 +109,75 @@ public class TransactionService {
         }
         walletRepository.save(wallet);
 
-        // ============================
-        //   6.1 APORTAR A UNA META
-        // ============================
+        // 6. Aportar a una meta (solo gastos)
         if (request.getGoalId() != null && request.getType() == Transaction.TransactionType.EXPENSE) {
-
-            goalClient.updateGoalAmount(
-                    request.getGoalId(),
-                    request.getAmount()
-            );
-
+            goalClient.updateGoalAmount(request.getGoalId(), request.getAmount());
             log.info("Meta {} actualizada con {}", request.getGoalId(), request.getAmount());
         }
 
-        // 6. Actualizar Evento (si existe)
-        // 6. Actualizar Evento (si existe)
-        if (request.getEventId() != null && request.getType() == Transaction.TransactionType.EXPENSE) {
-
-            EventUpdateSpentDTO updateSpent = new EventUpdateSpentDTO();
-
-            // CORRECCIÓN IMPORTANTE
-            transaction.setEventId(request.getEventId());
-
-            updateSpent.setEventId(request.getEventId());
-            updateSpent.setAmount(request.getAmount());
-
-            event = eventClient.updateEventSpent(request.getEventId(), updateSpent);
-
-            log.info("Evento actualizado: {} - Gastado: {}", event.getName(), event.getSpent());
-        }
-
+        // ⚠  Ya NO se actualizan eventos aquí (lo hace ms-events)
+        // Esto evita duplicados y llamadas cruzadas
 
         // 7. Respuesta final
         return buildTransactionResponse(transaction, category, subcategory, event);
     }
 
+    // =====================================================================
+    // LISTAR TRANSACCIONES
+    // =====================================================================
+    public List<TransactionResponseDTO> getUserTransactions(Long userId, LocalDate startDate, LocalDate endDate) {
+
+        List<Transaction> transactions;
+
+        if (startDate != null && endDate != null) {
+            LocalDateTime start = startDate.atStartOfDay();
+            LocalDateTime end = endDate.atTime(23, 59, 59);
+            transactions = transactionRepository.findByUserIdAndTransactionDateBetween(userId, start, end);
+        } else {
+            transactions = transactionRepository.findByUserId(userId);
+        }
+
+        return transactions.stream()
+                .map(this::enrichTransaction)
+                .collect(Collectors.toList());
+    }
+
+    // =====================================================================
+    // ENRIQUECER TRANSACCIÓN (evitar null pointer)
+    // =====================================================================
+    private TransactionResponseDTO enrichTransaction(Transaction transaction) {
+
+        CategoryDTO category = null;
+        SubcategoryDTO subcategory = null;
+
+        if (transaction.getCategoryId() != null) {
+            try {
+                category = categoryClient.getCategoryById(transaction.getCategoryId());
+            } catch (Exception ignored) {}
+        }
+
+        if (transaction.getCategoryId() != null && transaction.getSubcategoryId() != null) {
+            try {
+                subcategory = categoryClient.getSubcategoryById(
+                        transaction.getCategoryId(),
+                        transaction.getSubcategoryId()
+                );
+            } catch (Exception ignored) {}
+        }
+
+        EventDTO event = null;
+        if (transaction.getEventId() != null) {
+            try {
+                event = eventClient.getEventById(transaction.getEventId());
+            } catch (Exception ignored) {}
+        }
+
+        return buildTransactionResponse(transaction, category, subcategory, event);
+    }
+
+    // =====================================================================
+    // ARMAR RESPUESTA
+    // =====================================================================
     private TransactionResponseDTO buildTransactionResponse(
             Transaction transaction,
             CategoryDTO category,
@@ -157,41 +196,5 @@ public class TransactionService {
         response.setDescription(transaction.getDescription());
         response.setTransactionDate(transaction.getTransactionDate());
         return response;
-    }
-
-    public List<TransactionResponseDTO> getUserTransactions(Long userId, LocalDate startDate, LocalDate endDate) {
-
-        List<Transaction> transactions;
-
-        if (startDate != null && endDate != null) {
-            LocalDateTime start = startDate.atStartOfDay();
-            LocalDateTime end = endDate.atTime(23, 59, 59);
-            transactions = transactionRepository.findByUserIdAndTransactionDateBetween(userId, start, end);
-        } else {
-            transactions = transactionRepository.findByUserId(userId);
-        }
-
-        return transactions.stream()
-                .map(this::enrichTransaction)
-                .collect(Collectors.toList());
-    }
-
-    private TransactionResponseDTO enrichTransaction(Transaction transaction) {
-        CategoryDTO category = categoryClient.getCategoryById(transaction.getCategoryId());
-        SubcategoryDTO subcategory = categoryClient.getSubcategoryById(
-                transaction.getCategoryId(),
-                transaction.getSubcategoryId()
-        );
-
-        EventDTO event = null;
-        if (transaction.getEventId() != null) {
-            try {
-                event = eventClient.getEventById(transaction.getEventId());
-            } catch (Exception e) {
-                log.warn("No se pudo obtener evento {}: {}", transaction.getEventId(), e.getMessage());
-            }
-        }
-
-        return buildTransactionResponse(transaction, category, subcategory, event);
     }
 }

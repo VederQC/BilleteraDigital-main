@@ -7,13 +7,14 @@ export enum TransactionType {
   EXPENSE = 'EXPENSE'
 }
 
-
 export interface TransactionRequest {
   userId: number;
-  categoryId: number;
-  subcategoryId: number;
-  goalId?: number | null;
-  eventId?: number | null;
+
+  categoryId: number | null;      // ⭐ Ahora acepta NULL
+  subcategoryId: number | null;   // ⭐ Ahora acepta NULL
+  goalId?: number | null;         // ⭐ Si lo usabas en tu backend
+  eventId?: number | null;        // ⭐ Nuevo campo de tu compañero
+
   type: TransactionType;
   amount: number;
   description: string;
@@ -38,14 +39,29 @@ export class TransactionService {
   constructor(private http: HttpClient) {}
 
   createTransaction$(payload: TransactionRequest): Observable<TransactionResponse> {
+    // urlInterceptor agrega environment.apiUrl
     return this.http.post<TransactionResponse>('transactions', payload);
   }
 
-  getUserTransactions$(userId: number, startDate?: string, endDate?: string): Observable<TransactionResponse[]> {
-    let params = new HttpParams();
-    if (startDate) params = params.set('startDate', startDate);
-    if (endDate) params = params.set('endDate', endDate);
+  getUserTransactions$(
+    userId: number,
+    startDate?: string,
+    endDate?: string
+  ): Observable<TransactionResponse[]> {
 
-    return this.http.get<TransactionResponse[]>(`transactions/user/${userId}`, { params });
+    let params = new HttpParams();
+
+    if (startDate) {
+      params = params.set('startDate', startDate);
+    }
+
+    if (endDate) {
+      params = params.set('endDate', endDate);
+    }
+
+    return this.http.get<TransactionResponse[]>(
+      `transactions/user/${userId}`,
+      { params }
+    );
   }
 }

@@ -16,7 +16,7 @@ import { Event } from 'src/app/providers/models/event.model';
 import { EventService } from 'src/app/providers/services/events/events.service';
 import { AuthService } from 'src/app/providers/services/auth/auth.service';
 import { WalletService } from 'src/app/providers/services/wallet/wallet.service';
- // ⭐ AGREGADO
+import { TransactionService } from 'src/app/providers/services/transaction/transaction.service';
 
 @Component({
   selector: 'app-events',
@@ -42,7 +42,6 @@ export class EventsComponent implements OnInit {
   events: Event[] = [];
   editingId: number | null = null;
 
-  // ID real del usuario del JWT
   userId!: number;
 
   form = {
@@ -57,14 +56,15 @@ export class EventsComponent implements OnInit {
 
   constructor(
     private eventService: EventService,
-    private walletService: WalletService,   // ⭐ AGREGADO
+    private walletService: WalletService,
+    private txService: TransactionService,      // ⭐ AGREGADO
     private dialog: MatDialog,
     private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.loadUserId();   
-    this.loadEvents();  
+    this.loadUserId();
+    this.loadEvents();
   }
 
   // ============================================================
@@ -139,13 +139,12 @@ export class EventsComponent implements OnInit {
   }
 
   // ============================================================
-  // ➕ AGREGAR GASTO (EVENTO + BILLETERA)
+  // ➕ AGREGAR GASTO (EVENTO → TRANSACCIÓN → BILLETERA)
   // ============================================================
   addSpent(event: Event): void {
     const amount = prompt('Monto a agregar al gasto del evento:');
 
     if (!amount) return;
-
     const num = Number(amount);
     if (isNaN(num)) return alert('Monto inválido');
 
@@ -154,9 +153,22 @@ export class EventsComponent implements OnInit {
       .subscribe({
         next: () => {
 
-          // 2️⃣ Descontar de la billetera del usuario
-          this.walletService.subtractFromWallet$(this.userId, num)
+          // 2️⃣ Registrar transacción automática (EXPENSE)
+          this.txService.createTransaction$({
+            userId: this.userId,
+            categoryId: null,
+            subcategoryId: null,
+            eventId: event.id,
+            type: 'EXPENSE',
+            amount: num,
+            description: 'Gasto agregado al evento'
+          }).subscribe({
+            next: () => console.log("Transacción creada correctamente"),
+            error: (err) => console.error("Error creando transacción:", err)
+          });
 
+          // 3️⃣ Descontar de la billetera del usuario
+          this.walletService.subtractFromWallet$(this.userId, num)
             .subscribe({
               next: () => {
                 this.loadEvents();

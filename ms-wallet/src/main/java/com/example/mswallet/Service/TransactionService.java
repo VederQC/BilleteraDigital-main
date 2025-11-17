@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 public class TransactionService {
@@ -28,37 +29,49 @@ public class TransactionService {
 
     @Autowired
     public TransactionService(
-        TransactionRepository transactionRepository,
-        WalletRepository walletRepository,
-        CategoryFeignClient categoryClient,
-        EventFeignClient eventClient  ) {
+            TransactionRepository transactionRepository,
+            WalletRepository walletRepository,
+            CategoryFeignClient categoryClient,
+            EventFeignClient eventClient) {
+
         this.transactionRepository = transactionRepository;
         this.walletRepository = walletRepository;
         this.categoryClient = categoryClient;
         this.eventClient = eventClient;
     }
 
+    // =====================================================================
+    // CREATE
+    // =====================================================================
     @Transactional
     public TransactionResponseDTO createTransaction(TransactionRequestDTO request) {
 
-        // 1. Verificar que existe la wallet del usuario
+        // 1. Verificar wallet
         Wallet wallet = walletRepository.findByUserId(request.getUserId())
-            .orElseThrow(() -> new ResourceNotFoundException("Wallet no encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Wallet no encontrada"));
 
-        // 2. Obtener información de categoría y subcategoría de ms-categories
-        CategoryDTO category = categoryClient.getCategoryById(request.getCategoryId());
-        SubcategoryDTO subcategory = categoryClient.getSubcategoryById(
-            request.getCategoryId(),
-            request.getSubcategoryId()
-        );
+        // 2. Obtener categoría / subcategoría solo si existen
+        CategoryDTO category = null;
+        SubcategoryDTO subcategory = null;
 
-        // 3. Si hay eventId, obtener información del evento de ms-events
+        if (request.getCategoryId() != null) {
+            category = categoryClient.getCategoryById(request.getCategoryId());
+        }
+
+        if (request.getCategoryId() != null && request.getSubcategoryId() != null) {
+            subcategory = categoryClient.getSubcategoryById(
+                    request.getCategoryId(),
+                    request.getSubcategoryId()
+            );
+        }
+
+        // 3. Obtener evento si existe
         EventDTO event = null;
         if (request.getEventId() != null) {
             event = eventClient.getEventById(request.getEventId());
         }
 
-        // 4. Crear la transacción
+        // 4. Crear transacción
         Transaction transaction = new Transaction();
         transaction.setWalletId(wallet.getId());
         transaction.setUserId(request.getUserId());
@@ -72,7 +85,7 @@ public class TransactionService {
 
         transaction = transactionRepository.save(transaction);
 
-        // 5. Actualizar balance de la wallet
+        // 5. Actualizar wallet
         if (request.getType() == Transaction.TransactionType.INCOME) {
             wallet.setBalance(wallet.getBalance().add(request.getAmount()));
         } else {
@@ -80,28 +93,75 @@ public class TransactionService {
         }
         walletRepository.save(wallet);
 
-        // 6. Si está asociada a un evento, actualizar el gasto del evento en ms-events
-        if (request.getEventId() != null && request.getType() == Transaction.TransactionType.EXPENSE) {
-            EventUpdateSpentDTO updateSpent = new EventUpdateSpentDTO();
-            updateSpent.setEventId(request.getEventId());
-            updateSpent.setAmount(request.getAmount());
+        // ❌ 6. YA NO ACTUALIZA EVENTOS AQUÍ (SE HACE DESDE ms-events)
+        // (eliminado para evitar duplicados)
 
-            event = eventClient.updateEventSpent(request.getEventId(), updateSpent);
-            log.info("Evento actualizado: {} - Gastado: {}", event.getName(), event.getSpent());
+        // 7. respuesta
+        return buildTransactionResponse(transaction, category, subcategory, event);
+    }
+
+    // =====================================================================
+    // LISTAR TRANSACCIONES
+    // =====================================================================
+    public List<TransactionResponseDTO> getUserTransactions(Long userId, LocalDate startDate, LocalDate endDate) {
+
+        List<Transaction> transactions;
+
+        if (startDate != null && endDate != null) {
+            LocalDateTime start = startDate.atStartOfDay();
+            LocalDateTime end = endDate.atTime(23, 59, 59);
+            transactions = transactionRepository.findByUserIdAndTransactionDateBetween(userId, start, end);
+        } else {
+            transactions = transactionRepository.findByUserId(userId);
         }
 
-        // 7. Construir respuesta
+        return transactions.stream()
+                .map(this::enrichTransaction)
+                .collect(Collectors.toList());
+    }
 
+    // =====================================================================
+    // FIX: NO FALLA SI categoryId/subcategoryId SON NULL
+    // =====================================================================
+    private TransactionResponseDTO enrichTransaction(Transaction transaction) {
+
+        CategoryDTO category = null;
+        SubcategoryDTO subcategory = null;
+
+        if (transaction.getCategoryId() != null) {
+            try {
+                category = categoryClient.getCategoryById(transaction.getCategoryId());
+            } catch (Exception ignored) {}
+        }
+
+        if (transaction.getCategoryId() != null && transaction.getSubcategoryId() != null) {
+            try {
+                subcategory = categoryClient.getSubcategoryById(
+                        transaction.getCategoryId(),
+                        transaction.getSubcategoryId()
+                );
+            } catch (Exception ignored) {}
+        }
+
+        EventDTO event = null;
+        if (transaction.getEventId() != null) {
+            try {
+                event = eventClient.getEventById(transaction.getEventId());
+            } catch (Exception ignored) {}
+        }
 
         return buildTransactionResponse(transaction, category, subcategory, event);
     }
 
+    // =====================================================================
+    // ARMAR RESPUESTA
+    // =====================================================================
     private TransactionResponseDTO buildTransactionResponse(
-        Transaction transaction,
-        CategoryDTO category,
-        SubcategoryDTO subcategory,
-        EventDTO event
-    ) {
+            Transaction transaction,
+            CategoryDTO category,
+            SubcategoryDTO subcategory,
+            EventDTO event) {
+
         TransactionResponseDTO response = new TransactionResponseDTO();
         response.setId(transaction.getId());
         response.setWalletId(transaction.getWalletId());
@@ -114,40 +174,5 @@ public class TransactionService {
         response.setDescription(transaction.getDescription());
         response.setTransactionDate(transaction.getTransactionDate());
         return response;
-    }
-
-    public List<TransactionResponseDTO> getUserTransactions(Long userId, LocalDate startDate, LocalDate endDate) {
-
-        List<Transaction> transactions;
-        if (startDate != null && endDate != null) {
-            LocalDateTime start = startDate.atStartOfDay();
-            LocalDateTime end = endDate.atTime(23, 59, 59);
-            transactions = transactionRepository.findByUserIdAndTransactionDateBetween(userId, start, end);
-        } else {
-            transactions = transactionRepository.findByUserId(userId);
-        }
-
-        return transactions.stream()
-            .map(this::enrichTransaction)
-            .collect(Collectors.toList());
-    }
-
-    private TransactionResponseDTO enrichTransaction(Transaction transaction) {
-        CategoryDTO category = categoryClient.getCategoryById(transaction.getCategoryId());
-        SubcategoryDTO subcategory = categoryClient.getSubcategoryById(
-            transaction.getCategoryId(),
-            transaction.getSubcategoryId()
-        );
-
-        EventDTO event = null;
-        if (transaction.getEventId() != null) {
-            try {
-                event = eventClient.getEventById(transaction.getEventId());
-            } catch (Exception e) {
-                log.warn("No se pudo obtener evento {}: {}", transaction.getEventId(), e.getMessage());
-            }
-        }
-
-        return buildTransactionResponse(transaction, category, subcategory, event);
     }
 }

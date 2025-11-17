@@ -26,8 +26,8 @@ export type TransactionType = 'INCOME' | 'EXPENSE';
 
 export interface TransactionRequest {
   userId: number;
-  categoryId: number;
-  subcategoryId: number;
+  categoryId: number | null;       // ⭐ AHORA ACEPTA NULL
+  subcategoryId: number | null;    // ⭐ AHORA ACEPTA NULL
   eventId?: number | null;
   type: TransactionType;
   amount: number;
@@ -52,7 +52,7 @@ export class TransactionService {
   constructor(private http: HttpClient) {}
 
   createTransaction$(payload: TransactionRequest): Observable<TransactionResponse> {
-    // urlInterceptor le agrega environment.apiUrl
+    // urlInterceptor agrega environment.apiUrl
     return this.http.post<TransactionResponse>('transactions', payload);
   }
 
@@ -61,6 +61,7 @@ export class TransactionService {
     startDate?: string,
     endDate?: string
   ): Observable<TransactionResponse[]> {
+
     let params = new HttpParams();
     if (startDate) params = params.set('startDate', startDate);
     if (endDate) params = params.set('endDate', endDate);

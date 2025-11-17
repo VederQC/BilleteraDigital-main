@@ -8,33 +8,81 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/events")
+@RequestMapping("/events") // URL base para todo el módulo
 @RequiredArgsConstructor
 public class EventController {
 
+    // Servicio conectado directamente sin interfaces
     private final EventServiceImpl eventService;
 
-    // 🔹 Crear nuevo evento
+    // -------------------------------------------------------------------------
+    // 🟦 Crear un evento
+    // POST: /events
+    // -------------------------------------------------------------------------
     @PostMapping
-    public ResponseEntity<EventResponseDTO> createEvent(@RequestBody CreateEventDTO request) {
-        EventResponseDTO response = eventService.createEvent(request);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<EventResponseDTO> create(@RequestBody CreateEventDTO dto) {
+        return ResponseEntity.ok(eventService.createEvent(dto));
     }
 
-    // 🔹 Obtener evento por ID
+    // -------------------------------------------------------------------------
+    // 🟧 Listar todos los eventos
+    // GET: /events
+    // -------------------------------------------------------------------------
+    @GetMapping
+    public ResponseEntity<List<EventResponseDTO>> getAll() {
+        return ResponseEntity.ok(eventService.getAllEvents());
+    }
+
+    // -------------------------------------------------------------------------
+    // 🟩 Obtener evento por ID
+    // GET: /events/{id}
+    // -------------------------------------------------------------------------
     @GetMapping("/{id}")
-    public ResponseEntity<EventResponseDTO> getEventById(@PathVariable Long id) {
-        EventResponseDTO response = eventService.getEventById(id);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<EventResponseDTO> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(eventService.getEventById(id));
     }
 
-    // 🔹 Actualizar gasto (llamado desde ms-wallet)
-    @PutMapping("/{id}/spent")
-    public ResponseEntity<EventResponseDTO> updateEventSpent(
+    // -------------------------------------------------------------------------
+    // 🟨 Obtener eventos de un usuario
+    // GET: /events/user/{userId}
+    // -------------------------------------------------------------------------
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<EventResponseDTO>> getByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(eventService.getEventsByUserId(userId));
+    }
+
+    // -------------------------------------------------------------------------
+    // 🟪 Actualizar evento completo
+    // PUT: /events/{id}
+    // -------------------------------------------------------------------------
+    @PutMapping("/{id}")
+    public ResponseEntity<EventResponseDTO> update(
             @PathVariable Long id,
-            @RequestBody EventUpdateSpentDTO updateDTO) {
-        EventResponseDTO response = eventService.updateEventSpent(id, updateDTO);
-        return ResponseEntity.ok(response);
+            @RequestBody CreateEventDTO dto) {
+        return ResponseEntity.ok(eventService.updateEvent(id, dto));
+    }
+
+    // -------------------------------------------------------------------------
+    // 🟥 Sumar gasto al evento
+    // PATCH: /events/{id}/spent
+    // -------------------------------------------------------------------------
+    @PatchMapping("/{id}/spent")
+    public ResponseEntity<EventResponseDTO> updateSpent(
+            @PathVariable Long id,
+            @RequestBody EventUpdateSpentDTO dto) {
+        return ResponseEntity.ok(eventService.updateEventSpent(id, dto));
+    }
+
+    // -------------------------------------------------------------------------
+    // ⛔ Eliminar evento
+    // DELETE: /events/{id}
+    // -------------------------------------------------------------------------
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> delete(@PathVariable Long id) {
+        eventService.deleteEvent(id);
+        return ResponseEntity.ok("Evento eliminado correctamente");
     }
 }

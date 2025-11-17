@@ -15,6 +15,8 @@ import { jwtDecode } from 'jwt-decode';
 import { Event } from 'src/app/providers/models/event.model';
 import { EventService } from 'src/app/providers/services/events/events.service';
 import { AuthService } from 'src/app/providers/services/auth/auth.service';
+import { WalletService } from 'src/app/providers/services/wallet/wallet.service';
+ // ⭐ AGREGADO
 
 @Component({
   selector: 'app-events',
@@ -40,7 +42,7 @@ export class EventsComponent implements OnInit {
   events: Event[] = [];
   editingId: number | null = null;
 
-  // 🔥 YA NO HARDCODEADO
+  // ID real del usuario del JWT
   userId!: number;
 
   form = {
@@ -55,17 +57,18 @@ export class EventsComponent implements OnInit {
 
   constructor(
     private eventService: EventService,
+    private walletService: WalletService,   // ⭐ AGREGADO
     private dialog: MatDialog,
     private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.loadUserId();   // ⭐ Obtiene el verdadero ID del usuario logueado
-    this.loadEvents();   // ⭐ Carga eventos filtrados por usuario real
+    this.loadUserId();   
+    this.loadEvents();  
   }
 
   // ============================================================
-  // 🔥 OBTENER ID DEL USUARIO DESDE EL TOKEN JWT
+  // 🔥 Obtener ID del usuario del token
   // ============================================================
   loadUserId(): void {
     const token = this.authService.getToken();
@@ -135,22 +138,41 @@ export class EventsComponent implements OnInit {
     }
   }
 
-  // ➕ AGREGAR GASTO
+  // ============================================================
+  // ➕ AGREGAR GASTO (EVENTO + BILLETERA)
+  // ============================================================
   addSpent(event: Event): void {
-    const amount = prompt('Monto a agregar:');
+    const amount = prompt('Monto a agregar al gasto del evento:');
 
     if (!amount) return;
 
     const num = Number(amount);
     if (isNaN(num)) return alert('Monto inválido');
 
+    // 1️⃣ Actualizar el gasto del evento
     this.eventService.updateSpent$(event.id, { eventId: event.id, amount: num })
       .subscribe({
-        next: () => this.loadEvents()
+        next: () => {
+
+          // 2️⃣ Descontar de la billetera del usuario
+          this.walletService.subtractFromWallet$(this.userId, num)
+
+            .subscribe({
+              next: () => {
+                this.loadEvents();
+                console.log("Gasto actualizado y billetera descontada correctamente");
+              },
+              error: (err) => {
+                console.error("Error actualizando billetera", err);
+                alert("El gasto se registró, pero NO se pudo actualizar la billetera.");
+              }
+            });
+
+        }
       });
   }
 
-  // 🗑️ Eliminar
+  // 🗑️ Eliminar evento
   deleteEvent(id: number): void {
     if (!confirm('¿Eliminar este evento?')) return;
 

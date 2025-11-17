@@ -32,4 +32,11 @@ export class WalletService {
   deleteWalletByUserId$(userId: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/user/${userId}`);
   }
+
+ subtractFromWallet$(userId: number, amount: number): Observable<any> {
+  return this.http.patch(`${this.baseUrl}/${userId}/subtract`, { amount }, {
+    responseType: 'text' as 'json'
+  });
+}
+
 }

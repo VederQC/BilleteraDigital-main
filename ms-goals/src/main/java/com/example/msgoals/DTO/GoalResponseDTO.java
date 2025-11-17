@@ -19,4 +19,6 @@ public class GoalResponseDTO {
     private LocalDateTime deadline;
     private String status;
     private LocalDateTime createdAt;
+    private Long subcategoryId;
+
 }

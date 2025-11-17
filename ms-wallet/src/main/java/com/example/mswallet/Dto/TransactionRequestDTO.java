@@ -11,6 +11,7 @@ public class TransactionRequestDTO {
     private Long categoryId;
     private Long subcategoryId;
     private Long eventId; // Opcional
+    private Long goalId;
     private Transaction.TransactionType type;
     private BigDecimal amount;
     private String description;

@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Output, Input } from '@angular/core';
+import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/providers/services/auth/auth.service';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { jwtDecode } from 'jwt-decode';
 
 @Component({
   selector: 'app-header',
@@ -16,19 +17,37 @@ import { MatButtonModule } from '@angular/material/button';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
 
-  /** Recibe si se debe mostrar o no el botón */
   @Input() showToggle: boolean = true;
 
-  /** Emite el evento hacia FullComponent */
   @Output() toggleCollapsed = new EventEmitter<void>();
   @Output() toggleMobileNav = new EventEmitter<void>();
+
+  userName: string = '';
 
   constructor(
     private authService: AuthService,
     private router: Router
   ) {}
+
+  ngOnInit(): void {
+    const token = this.authService.getToken();
+    console.log("TOKEN:", token);
+
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        console.log("TOKEN DECODIFICADO:", decoded);
+
+        // ⭐⭐ AQUÍ LA SOLUCIÓN ⭐⭐
+        this.userName = decoded.sub || '';
+
+      } catch (e) {
+        console.error("Error decodificando token:", e);
+      }
+    }
+  }
 
   onToggleCollapsed() {
     this.toggleCollapsed.emit();

@@ -22,6 +22,7 @@ public class Transaction {
     private Long categoryId; // Referencia a ms-categories
     private Long subcategoryId; // Referencia a ms-categories
     private Long eventId; // Referencia a ms-events (opcional)
+    private Long goalId;
     @Enumerated(EnumType.STRING)
     private TransactionType type; // INCOME, EXPENSE
     private BigDecimal amount;

@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { TransactionService, TransactionType } from '../../../providers/services/transaction/transaction.service';
 import { CategoryService } from 'src/app/providers/services/category/ category.service';
+import { GoalsService } from 'src/app/providers/services/goals/GoalsService';
 
 @Component({
   selector: 'app-transaction-dialog',
@@ -29,18 +30,21 @@ export class TransactionDialogComponent implements OnInit {
 
   categories: any[] = [];
   subcategories: any[] = [];
+  goals: any[] = [];  // 👈 metas cargadas
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { userId: number },
     private fb: FormBuilder,
     private txService: TransactionService,
     private categoryService: CategoryService,
+    private goalsService: GoalsService,
     private dialogRef: MatDialogRef<TransactionDialogComponent>
   ) {
     this.txForm = this.fb.group({
       type: ['EXPENSE' as TransactionType, Validators.required],
       categoryId: [null, Validators.required],
       subcategoryId: [null, Validators.required],
+      goalId: [null],   // 👈 nuevo
       eventId: [null],
       amount: [null, [Validators.required, Validators.min(0.01)]],
       description: ['', Validators.required],
@@ -48,12 +52,18 @@ export class TransactionDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
+
     // cargar categorías del usuario
     this.categoryService.getCategoriesByUser$(this.data.userId).subscribe(res => {
       this.categories = res;
     });
 
-    // cuando cambia categoría → cargar subcategorías
+    // cargar metas del usuario
+    this.goalsService.getGoalsByUser$(this.data.userId).subscribe(res => {
+      this.goals = res;
+    });
+
+    // subcategorías al cambiar categoría
     this.txForm.get('categoryId')?.valueChanges.subscribe(categoryId => {
       if (categoryId) {
         this.categoryService.getSubcategories$(categoryId).subscribe(res => {
@@ -68,15 +78,17 @@ export class TransactionDialogComponent implements OnInit {
   onSubmit(): void {
     if (this.txForm.invalid) return;
 
-    const formValue = this.txForm.value;
+    const f = this.txForm.value;
+
     const payload = {
       userId: this.data.userId,
-      categoryId: Number(formValue.categoryId),
-      subcategoryId: Number(formValue.subcategoryId),
-      eventId: formValue.eventId ? Number(formValue.eventId) : null,
-      type: formValue.type,
-      amount: Number(formValue.amount),
-      description: formValue.description
+      categoryId: Number(f.categoryId),
+      subcategoryId: Number(f.subcategoryId),
+      goalId: f.goalId ? Number(f.goalId) : null,     // 👈 enviar goalId
+      eventId: f.eventId ? Number(f.eventId) : null,
+      type: f.type,
+      amount: Number(f.amount),
+      description: f.description
     };
 
     this.txService.createTransaction$(payload).subscribe({

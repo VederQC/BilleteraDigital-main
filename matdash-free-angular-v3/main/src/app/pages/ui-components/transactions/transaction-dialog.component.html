@@ -32,7 +32,18 @@
       </mat-select>
     </mat-form-field>
 
-    <!-- EVENTO (ID OPCIONAL) -->
+    <!-- META (GOAL) -->
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Meta (Opcional)</mat-label>
+      <mat-select formControlName="goalId">
+        <mat-option [value]="null">Sin meta</mat-option>
+        <mat-option *ngFor="let g of goals" [value]="g.id">
+          {{ g.name }} — {{ g.currentAmount }}/{{ g.targetAmount }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- EVENTO -->
     <mat-form-field appearance="outline" class="w-100">
       <mat-label>Evento (opcional)</mat-label>
       <input matInput type="number" formControlName="eventId" />

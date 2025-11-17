@@ -132,3 +132,11 @@
     display: none;
   }
 }
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: #666;
+}
+

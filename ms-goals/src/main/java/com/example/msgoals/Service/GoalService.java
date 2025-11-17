@@ -1,14 +1,14 @@
 package com.example.msgoals.Service;
 
-import com.example.msgoals.DTO.AuthUserDto;
-import com.example.msgoals.DTO.GoalRequestDTO;
-import com.example.msgoals.DTO.GoalResponseDTO;
+import com.example.msgoals.DTO.*;
 import com.example.msgoals.Entity.Goal;
 import com.example.msgoals.Exceptions.ResourceNotFoundException;
 import com.example.msgoals.Feign.UserFeignClient;
+import com.example.msgoals.Feign.CategoryFeignClient;
 import com.example.msgoals.Repository.GoalRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,26 +19,33 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GoalService {
 
     private final GoalRepository goalRepository;
     private final UserFeignClient userFeignClient;
+    private final CategoryFeignClient categoryFeignClient;
 
     @Transactional
     public GoalResponseDTO createGoal(GoalRequestDTO request) {
-        try {
-            AuthUserDto user = userFeignClient.getUserById(request.getUserId());
-            if (user == null) throw new ResourceNotFoundException("Usuario no encontrado");
-        } catch (Exception e) {
-            throw new ResourceNotFoundException("Usuario no encontrado o ms-auth no disponible");
-        }
 
+        // Crear subcategoría automática dentro de categoría Objetivos (id 6)
+        SubcategoryResponseDTO sub = categoryFeignClient.createSubcategory(
+                6L,
+                new SubcategoryRequestDTO(
+                        request.getName(),
+                        "emoji_objects"
+                )
+        );
+
+        // Crear la meta
         Goal goal = Goal.builder()
                 .userId(request.getUserId())
                 .name(request.getName())
                 .description(request.getDescription())
                 .targetAmount(request.getTargetAmount())
                 .currentAmount(request.getCurrentAmount())
+                .subcategoryId(sub.getId()) // guardar id real de subcategoría
                 .progress(calculateProgress(request.getCurrentAmount(), request.getTargetAmount()))
                 .deadline(request.getDeadline())
                 .status(request.getStatus())
@@ -61,9 +68,8 @@ public class GoalService {
         Goal goal = goalRepository.findById(goalId)
                 .orElseThrow(() -> new ResourceNotFoundException("Meta no encontrada"));
 
-        // Actualizar currentAmount según el gasto/ingreso
         goal.setCurrentAmount(goal.getCurrentAmount().add(amountChange));
-        // Evitar que currentAmount sea negativo
+
         if (goal.getCurrentAmount().compareTo(BigDecimal.ZERO) < 0) {
             goal.setCurrentAmount(BigDecimal.ZERO);
         }
@@ -88,9 +94,47 @@ public class GoalService {
                 .targetAmount(goal.getTargetAmount())
                 .currentAmount(goal.getCurrentAmount())
                 .progress(goal.getProgress())
+                .subcategoryId(goal.getSubcategoryId()) // 🔥 IMPORTANTE
                 .deadline(goal.getDeadline())
                 .status(goal.getStatus())
                 .createdAt(goal.getCreatedAt())
                 .build();
     }
+
+    @Transactional
+    public GoalResponseDTO updateGoal(Long goalId, GoalUpdateDTO request) {
+        Goal goal = goalRepository.findById(goalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Meta no encontrada"));
+
+        if (request.getName() != null) goal.setName(request.getName());
+        if (request.getDescription() != null) goal.setDescription(request.getDescription());
+        if (request.getTargetAmount() != null) {
+            goal.setTargetAmount(request.getTargetAmount());
+            goal.setProgress(calculateProgress(goal.getCurrentAmount(), request.getTargetAmount()));
+        }
+        if (request.getDeadline() != null) goal.setDeadline(request.getDeadline());
+        if (request.getStatus() != null) goal.setStatus(request.getStatus());
+
+        Goal updated = goalRepository.save(goal);
+        return mapToResponse(updated);
+    }
+
+    @Transactional
+    public void deleteGoal(Long goalId) {
+
+        Goal goal = goalRepository.findById(goalId)
+                .orElseThrow(() -> new ResourceNotFoundException("Meta no encontrada"));
+
+        // Eliminar subcategoría asociada
+        if (goal.getSubcategoryId() != null) {
+            try {
+                categoryFeignClient.deleteSubcategory(goal.getSubcategoryId());
+            } catch (Exception ignored) {
+                // Si falla categories, no romper ms-goals
+            }
+        }
+
+        goalRepository.delete(goal);
+    }
+
 }

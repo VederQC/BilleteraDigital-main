@@ -16,4 +16,5 @@ public class GoalRequestDTO {
     private BigDecimal currentAmount;
     private LocalDateTime deadline;
     private String status; // Ejemplo: "EN_PROGRESO", "COMPLETADA", "CANCELADA"
+
 }

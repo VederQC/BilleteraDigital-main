@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-
 @Service
 @RequiredArgsConstructor
 public class WalletService {
@@ -21,6 +20,9 @@ public class WalletService {
     private final WalletRepository walletRepository;
     private final UserFeignClient userFeignClient;
 
+    // ============================================================
+    // 🟦 Crear Wallet
+    // ============================================================
     @Transactional
     public WalletResponseDTO createWallet(WalletRequestDTO request) {
         var user = userFeignClient.getUserById(request.getUserId());
@@ -39,39 +41,63 @@ public class WalletService {
         wallet.setCreatedAt(LocalDateTime.now());
 
         wallet = walletRepository.save(wallet);
-
-        WalletResponseDTO response = new WalletResponseDTO();
-        response.setId(wallet.getId());
-        response.setUserId(wallet.getUserId());
-        response.setBalance(wallet.getBalance());
-        response.setCurrency(wallet.getCurrency());
-        response.setCreatedAt(wallet.getCreatedAt());
-
-        return response;
+        return mapToResponse(wallet);
     }
+
+    // ============================================================
+    // 🟦 Obtener Wallet por ID
+    // ============================================================
     public WalletResponseDTO getWalletById(Long walletId) {
         Wallet wallet = walletRepository.findById(walletId)
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet no encontrada"));
         return mapToResponse(wallet);
     }
 
+    // ============================================================
+    // 🟨 Obtener Wallet por UserId
+    // ============================================================
     public WalletResponseDTO getWalletByUserId(Long userId) {
         Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet no encontrada"));
-        WalletResponseDTO response = new WalletResponseDTO();
-        response.setId(wallet.getId());
-        response.setUserId(wallet.getUserId());
-        response.setBalance(wallet.getBalance());
-        response.setCurrency(wallet.getCurrency());
-        response.setCreatedAt(wallet.getCreatedAt());
-        return response;
+        return mapToResponse(wallet);
     }
+
+    // ============================================================
+    // 🟥 Eliminar Wallet por UserId
+    // ============================================================
     @Transactional
     public void deleteWallet(Long userId) {
         Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet no encontrada"));
         walletRepository.delete(wallet);
     }
+
+    // ============================================================
+    // ⭐⭐⭐ 🔥 RESTAR SALDO (PARA AGREGAR GASTO EN EVENTOS)
+    // Called from: PATCH /wallets/{userId}/subtract
+    // ============================================================
+    @Transactional
+    public void subtractAmount(Long userId, Double amount) {
+
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Wallet no encontrada"));
+
+        BigDecimal gasto = BigDecimal.valueOf(amount);
+
+        // Validación de fondos suficientes
+        if (wallet.getBalance().compareTo(gasto) < 0) {
+            throw new IllegalStateException("Fondos insuficientes en la billetera");
+        }
+
+        // Restar monto
+        wallet.setBalance(wallet.getBalance().subtract(gasto));
+
+        walletRepository.save(wallet);
+    }
+
+    // ============================================================
+    // 📌 Conversión a DTO
+    // ============================================================
     private WalletResponseDTO mapToResponse(Wallet wallet) {
         return WalletResponseDTO.builder()
                 .id(wallet.getId())
@@ -81,7 +107,4 @@ public class WalletService {
                 .createdAt(wallet.getCreatedAt())
                 .build();
     }
-
-
-
 }

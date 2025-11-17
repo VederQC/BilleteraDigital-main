@@ -11,16 +11,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/events") // URL base para todo el módulo
+@RequestMapping("/events")
 @RequiredArgsConstructor
 public class EventController {
 
-    // Servicio conectado directamente sin interfaces
     private final EventServiceImpl eventService;
 
     // -------------------------------------------------------------------------
     // 🟦 Crear un evento
-    // POST: /events
     // -------------------------------------------------------------------------
     @PostMapping
     public ResponseEntity<EventResponseDTO> create(@RequestBody CreateEventDTO dto) {
@@ -29,7 +27,6 @@ public class EventController {
 
     // -------------------------------------------------------------------------
     // 🟧 Listar todos los eventos
-    // GET: /events
     // -------------------------------------------------------------------------
     @GetMapping
     public ResponseEntity<List<EventResponseDTO>> getAll() {
@@ -38,7 +35,6 @@ public class EventController {
 
     // -------------------------------------------------------------------------
     // 🟩 Obtener evento por ID
-    // GET: /events/{id}
     // -------------------------------------------------------------------------
     @GetMapping("/{id}")
     public ResponseEntity<EventResponseDTO> getById(@PathVariable Long id) {
@@ -47,7 +43,6 @@ public class EventController {
 
     // -------------------------------------------------------------------------
     // 🟨 Obtener eventos de un usuario
-    // GET: /events/user/{userId}
     // -------------------------------------------------------------------------
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<EventResponseDTO>> getByUser(@PathVariable Long userId) {
@@ -56,7 +51,6 @@ public class EventController {
 
     // -------------------------------------------------------------------------
     // 🟪 Actualizar evento completo
-    // PUT: /events/{id}
     // -------------------------------------------------------------------------
     @PutMapping("/{id}")
     public ResponseEntity<EventResponseDTO> update(
@@ -66,8 +60,7 @@ public class EventController {
     }
 
     // -------------------------------------------------------------------------
-    // 🟥 Sumar gasto al evento
-    // PATCH: /events/{id}/spent
+    // 🟥 Sumar gasto (usado por el front Angular)
     // -------------------------------------------------------------------------
     @PatchMapping("/{id}/spent")
     public ResponseEntity<EventResponseDTO> updateSpent(
@@ -77,8 +70,19 @@ public class EventController {
     }
 
     // -------------------------------------------------------------------------
+    // 🟩 Tu método adicional (llamado desde ms-wallet)
+    // PUT /events/{id}/spent
+    // -------------------------------------------------------------------------
+    @PutMapping("/{id}/spent")
+    public ResponseEntity<EventResponseDTO> updateEventSpentFromWallet(
+            @PathVariable Long id,
+            @RequestBody EventUpdateSpentDTO updateDTO) {
+        EventResponseDTO response = eventService.updateEventSpent(id, updateDTO);
+        return ResponseEntity.ok(response);
+    }
+
+    // -------------------------------------------------------------------------
     // ⛔ Eliminar evento
-    // DELETE: /events/{id}
     // -------------------------------------------------------------------------
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {

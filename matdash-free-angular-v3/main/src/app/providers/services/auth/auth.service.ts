@@ -58,4 +58,16 @@ export class AuthService {
   login(credentials: any) {
     return this.httpClient.post<TokenModels>(END_POINTS.login, credentials);
   }
+
+  // ⭐ NUEVO: REGISTRO DE USUARIO
+  register(payload: { email: string; password: string }) {
+    const requestBody = {
+      userName: payload.email,
+      password: payload.password
+    };
+
+    return this.httpClient.post<any>(END_POINTS.register, requestBody);
+  }
+
+
 }

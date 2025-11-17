@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { MaterialModule } from 'src/app/material.module';
+import { AuthService } from 'src/app/providers/services/auth/auth.service';
 
 @Component({
   selector: 'app-side-register',
@@ -14,12 +15,28 @@ import { MaterialModule } from 'src/app/material.module';
 export class AppSideRegisterComponent {
   options = this.settings.getOptions();
 
-  constructor(private settings: CoreService, private router: Router) {}
+  loading = false;
+  errorMessage = '';
+
+  constructor(
+    private settings: CoreService,
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   form = new FormGroup({
-    uname: new FormControl('', [Validators.required, Validators.minLength(6)]),
-    email: new FormControl('', [Validators.required]),
-    password: new FormControl('', [Validators.required]),
+    uname: new FormControl('', [
+      Validators.required,
+      Validators.minLength(3),
+    ]),
+    email: new FormControl('', [
+      Validators.required,
+      Validators.email,
+    ]),
+    password: new FormControl('', [
+      Validators.required,
+      Validators.minLength(6),
+    ]),
   });
 
   get f() {
@@ -27,7 +44,33 @@ export class AppSideRegisterComponent {
   }
 
   submit() {
-    // console.log(this.form.value);
-    this.router.navigate(['/']);
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.loading = true;
+    this.errorMessage = '';
+
+    const value = this.form.value;
+
+    const payload = {
+      email: value.email ?? '',
+      password: value.password ?? '',
+    };
+
+
+    this.authService.register(payload).subscribe({
+      next: () => {
+        this.loading = false;
+        alert('✅ Cuenta creada correctamente. Ahora puedes iniciar sesión.');
+        this.router.navigate(['/authentication/login']);
+      },
+      error: (err) => {
+        console.error('Error en registro:', err);
+        this.loading = false;
+        this.errorMessage = '❌ No se pudo crear la cuenta. Intenta de nuevo.';
+      }
+    });
   }
 }

@@ -30,6 +30,9 @@ import {urlInterceptor} from "./core/interceptors/url.interceptor";
 import {tokenInterceptor} from "./core/interceptors/token.interceptor";
 import {errorInterceptor} from "./core/interceptors/error.interceptor";
 
+// ⭐ NECESARIO PARA EL DATEPICKER
+import { provideNativeDateAdapter } from '@angular/material/core';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
@@ -41,15 +44,20 @@ export const appConfig: ApplicationConfig = {
       }),
       withComponentInputBinding()
     ),
-    provideHttpClient(withInterceptorsFromDi(),
+    provideHttpClient(
+      withInterceptorsFromDi(),
       withInterceptors([
-        urlInterceptor ,      // 1. Primero modifica la URL
-        tokenInterceptor,    // 2. Luego agrega el token
-        errorInterceptor     // 3. Finalmente maneja errores
+        urlInterceptor,     // 1. Modifica la URL
+        tokenInterceptor,   // 2. Agrega el token JWT
+        errorInterceptor    // 3. Maneja errores globales
       ])
-      ),
+    ),
     provideClientHydration(),
     provideAnimationsAsync(),
+
+    // ⭐ AGREGAR ESTO SOLUCIONA TU ERROR
+    provideNativeDateAdapter(),
+
     importProvidersFrom(
       FormsModule,
       ReactiveFormsModule,

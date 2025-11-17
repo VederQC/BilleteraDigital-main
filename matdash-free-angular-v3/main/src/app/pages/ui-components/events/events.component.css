@@ -1,9 +1,119 @@
-.page-container {
-  padding: 20px;
+/* ------------------------- */
+/* CONTENEDOR GENERAL        */
+/* ------------------------- */
+
+.container {
+  width: 96%;
+  margin: 20px auto;
 }
 
-.title {
-  font-size: 24px;
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* ------------------------- */
+/* TABLA                     */
+/* ------------------------- */
+
+table {
+  width: 100%;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* ------------------------- */
+/* FORMULARIO DEL MODAL      */
+/* ------------------------- */
+
+.field {
+  width: 100%;
+}
+
+.row, .date-row {
+  display: flex;
+  gap: 1rem;
+}
+
+/* 💎 MODAL DISEÑO ELEGANTE */
+
+.dialog-container {
+  width: 480px;
+  padding: 22px 26px;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.dialog-title {
+  margin-bottom: 18px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dialog-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+/* ------------------------------------------- */
+/* 🎨 BOTONES DE ACCIÓN (GASTO, EDITAR, ELIM)  */
+/* ------------------------------------------- */
+
+.action {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
   font-weight: 600;
-  margin-bottom: 10px;
+  transition: 0.25s ease;
+  margin-right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 2px 4px rgba(0,0,0,0.15);
+}
+
+/* + Gasto */
+.action.sub {
+  background: #2196F3;
+  color: white;
+}
+.action.sub:hover {
+  background: #1976D2;
+  transform: translateY(-2px);
+}
+
+/* Editar */
+.action.update {
+  background: #FFC107;
+  color: #4a3f00;
+}
+.action.update:hover {
+  background: #FFA000;
+  transform: translateY(-2px);
+}
+
+/* Eliminar */
+.action.delete {
+  background: #DC3545;
+  color: white;
+}
+.action.delete:hover {
+  background: #B52A37;
+  transform: translateY(-2px);
 }

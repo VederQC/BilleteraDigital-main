@@ -9,7 +9,7 @@ import {EntityDataService} from "../../utils/entity-data";
 export class CategoryService extends EntityDataService<any[]> {
 
   constructor(protected override httpClient: HttpClient) {
-    super(httpClient, END_POINTS.wallet);
+    super(httpClient, END_POINTS.category);
   }
 
 

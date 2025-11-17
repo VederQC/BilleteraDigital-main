@@ -17,6 +17,8 @@ import { EventService } from 'src/app/providers/services/events/events.service';
 import { AuthService } from 'src/app/providers/services/auth/auth.service';
 import { WalletService } from 'src/app/providers/services/wallet/wallet.service';
 import { TransactionService } from 'src/app/providers/services/transaction/transaction.service';
+import { TransactionType } from '../../../providers/services/transaction/transaction.service';
+
 
 @Component({
   selector: 'app-events',
@@ -159,7 +161,7 @@ export class EventsComponent implements OnInit {
             categoryId: null,
             subcategoryId: null,
             eventId: event.id,
-            type: 'EXPENSE',
+            type: TransactionType.EXPENSE,
             amount: num,
             description: 'Gasto agregado al evento'
           }).subscribe({

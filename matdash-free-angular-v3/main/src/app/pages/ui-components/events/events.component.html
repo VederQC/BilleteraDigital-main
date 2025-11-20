@@ -1,15 +1,6 @@
 <div class="container">
 
-  <div class="header">
-    <h2>Eventos</h2>
-
-    <!-- Botón AGREGAR -->
-    <button mat-raised-button color="primary" (click)="openDialog()">
-      + Agregar Evento
-    </button>
-  </div>
-
-  <!-- DIALOGO INTERNO (CREAR / EDITAR / AGREGAR GASTO) -->
+  <!-- 🔥 TEMPLATE DEL MODAL (SIEMPRE ARRIBA DEL CONTENIDO) -->
   <ng-template #dialogTemplate>
     <div class="dialog-container">
 
@@ -64,51 +55,52 @@
     </div>
   </ng-template>
 
-  <!-- TABLA -->
-  <table mat-table [dataSource]="events" class="mat-elevation-z8 table">
 
-    <!-- Nombre -->
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>Evento</th>
-      <td mat-cell *matCellDef="let e">{{ e.name }}</td>
-    </ng-container>
+  <!-- 🔥 HEADER -->
+  <div class="header">
+    <h2>Eventos</h2>
+    <button mat-raised-button color="primary" (click)="openDialog()">
+      + Agregar Evento
+    </button>
+  </div>
 
-    <!-- Presupuesto -->
-    <ng-container matColumnDef="budget">
-      <th mat-header-cell *matHeaderCellDef>Presupuesto</th>
-      <td mat-cell *matCellDef="let e">S/ {{ e.budget }}</td>
-    </ng-container>
 
-    <!-- Gastado -->
-    <ng-container matColumnDef="spent">
-      <th mat-header-cell *matHeaderCellDef>Gastado</th>
-      <td mat-cell *matCellDef="let e">S/ {{ e.spent }}</td>
-    </ng-container>
+  <!-- 🔥 TARJETAS DE EVENTOS (AQUÍ ESTABA EL PROBLEMA: ESTABA BORRADO) -->
+  <div class="cards-container">
+    
+    <mat-card class="event-card" *ngFor="let e of events">
 
-    <!-- Inicio -->
-    <ng-container matColumnDef="startDate">
-      <th mat-header-cell *matHeaderCellDef>Inicio</th>
-      <td mat-cell *matCellDef="let e">{{ e.startDate }}</td>
-    </ng-container>
+      <div class="card-header">
+        <h3>{{ e.name }}</h3>
+        <span class="budget">S/ {{ e.budget }}</span>
+      </div>
 
-    <!-- Fin -->
-    <ng-container matColumnDef="endDate">
-      <th mat-header-cell *matHeaderCellDef>Fin</th>
-      <td mat-cell *matCellDef="let e">{{ e.endDate }}</td>
-    </ng-container>
+      <p class="description">{{ e.description || 'Sin descripción' }}</p>
 
-    <!-- Acciones -->
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef>Acciones</th>
-      <td mat-cell *matCellDef="let e">
+      <div class="card-dates">
+        <div>
+          <label>Inicio:</label>
+          <span>{{ e.startDate }}</span>
+        </div>
+        <div>
+          <label>Fin:</label>
+          <span>{{ e.endDate }}</span>
+        </div>
+      </div>
+
+      <div class="spent-info">
+        <label>Gastado:</label>
+        <strong>S/ {{ e.spent }}</strong>
+      </div>
+
+      <div class="actions-row">
         <button class="action sub" (click)="addSpent(e)">+ Gasto</button>
         <button class="action update" (click)="openEditDialog(e)">Editar</button>
         <button class="action delete" (click)="deleteEvent(e.id)">Eliminar</button>
-      </td>
-    </ng-container>
+      </div>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </mat-card>
 
-  </table>
+  </div>
+
 </div>

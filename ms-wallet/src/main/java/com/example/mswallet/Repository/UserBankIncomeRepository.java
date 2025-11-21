@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface UserBankIncomeRepository extends JpaRepository<UserBankIncome, Long> {
 
-    List<UserBankIncome> findByUserId(Long userId);
+    List<UserBankIncome> findByUserIdAndBankId(Long userId, Long bankId);
 }

@@ -3,15 +3,14 @@ package com.example.mswallet.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "user_bank_income")
+@Table(name = "user_bank_balance")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserBankIncome {
+public class UserBankBalance {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +19,5 @@ public class UserBankIncome {
     private Long userId;
     private Long bankId;
 
-    private BigDecimal amount;
-    private String description;
-    private LocalDateTime createdAt;
+    private BigDecimal balance;   // saldo actual del banco
 }

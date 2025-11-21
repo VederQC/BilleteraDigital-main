@@ -5,6 +5,7 @@ import com.example.mswallet.Dto.BankIncomeResponseDTO;
 import com.example.mswallet.Dto.BankTransferDTO;
 import com.example.mswallet.Dto.TransactionResponseDTO;
 
+import com.example.mswallet.Entity.Bank;
 import com.example.mswallet.Entity.Transaction;
 import com.example.mswallet.Entity.UserBankBalance;
 import com.example.mswallet.Entity.UserBankIncome;
@@ -12,6 +13,7 @@ import com.example.mswallet.Entity.Wallet;
 
 import com.example.mswallet.Exceptions.ResourceNotFoundException;
 
+import com.example.mswallet.Repository.BankRepository;
 import com.example.mswallet.Repository.UserBankBalanceRepository;
 import com.example.mswallet.Repository.UserBankIncomeRepository;
 import com.example.mswallet.Repository.WalletRepository;
@@ -34,6 +36,7 @@ public class BankServiceLogic {
     private final UserBankIncomeRepository incomeRepo;
     private final WalletRepository walletRepo;
     private final TransactionRepository txRepo;
+    private final BankRepository bankRepository;  // ⭐ NECESARIO PARA OBTENER EL NOMBRE DEL BANCO
 
     // 1) AGREGAR DINERO AL BANCO
     @Transactional
@@ -61,7 +64,7 @@ public class BankServiceLogic {
         balance.setBalance(balance.getBalance().add(dto.getAmount()));
         balanceRepo.save(balance);
 
-        return income; // devuelve historial
+        return income;
     }
 
     // 2) OBTENER HISTORIAL DE UN BANCO
@@ -102,17 +105,26 @@ public class BankServiceLogic {
         wallet.setBalance(wallet.getBalance().add(dto.getAmount()));
         walletRepo.save(wallet);
 
-        // 4. Registrar como transacción INCOME
+        // ⭐⭐ 4. Obtener el nombre del banco ⭐⭐
+        Bank bank = bankRepository.findById(dto.getBankId())
+                .orElseThrow(() -> new ResourceNotFoundException("Banco no encontrado"));
+
+        String bankName = bank.getName();
+
+        // 5. Registrar transacción
         Transaction tx = new Transaction();
         tx.setUserId(dto.getUserId());
         tx.setWalletId(wallet.getId());
         tx.setAmount(dto.getAmount());
         tx.setType(Transaction.TransactionType.INCOME);
-        tx.setDescription("Transferencia desde banco");
+
+        // ⭐⭐ Aquí añadimos el nombre del banco ⭐⭐
+        tx.setDescription("Transferencia desde banco: " + bankName);
+
         tx.setTransactionDate(LocalDateTime.now());
         txRepo.save(tx);
 
-        // 5. Respuesta
+        // 6. Respuesta
         TransactionResponseDTO res = new TransactionResponseDTO();
         res.setId(tx.getId());
         res.setUserId(tx.getUserId());

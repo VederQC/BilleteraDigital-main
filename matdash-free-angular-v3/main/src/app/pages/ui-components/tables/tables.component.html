@@ -1,49 +1,75 @@
-<mat-card class="cardWithShadow">
-  <mat-card-content>
-    <div class="header">
-      <h3>Billetera Digital</h3>
-      <button mat-fab color="primary" class="create-button" (click)="openCreateDialog()">
-        <mat-icon>add</mat-icon>
-      </button>
+<mat-card class="wallet-card">
+
+  <!-- ENCABEZADO -->
+  <div class="wallet-header">
+    <div>
+      <h2>Billetera Digital</h2>
+      <p class="subtitle">Resumen financiero del usuario</p>
     </div>
 
-    <table mat-table [dataSource]="wallet ? [wallet] : []" class="w-100">
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef>ID Wallet</th>
-        <td mat-cell *matCellDef="let element">{{ element.id }}</td>
-      </ng-container>
+    <button mat-fab color="primary" class="create-button" (click)="openCreateDialog()">
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
 
-      <ng-container matColumnDef="userId">
-        <th mat-header-cell *matHeaderCellDef>Usuario</th>
-        <td mat-cell *matCellDef="let element">{{ element.userId }}</td>
-      </ng-container>
+  <!-- RESUMEN DE WALLET -->
+  <div class="wallet-summary" *ngIf="wallet">
+    <div class="wallet-icon">
+      💰
+    </div>
 
-      <ng-container matColumnDef="balance">
-        <th mat-header-cell *matHeaderCellDef>Balance</th>
-        <td mat-cell *matCellDef="let element">PEN{{ element.balance | number:'1.2-2' }}</td>
-      </ng-container>
+    <div class="wallet-info">
+      <h3>Balance total</h3>
+      <h1 class="balance">PEN {{ wallet.balance | number:'1.2-2' }}</h1>
 
-      <ng-container matColumnDef="currency">
-        <th mat-header-cell *matHeaderCellDef>Moneda</th>
-        <td mat-cell *matCellDef="let element">{{ element.currency | uppercase }}</td>
-      </ng-container>
+      <p class="currency">Moneda: {{ wallet.currency | uppercase }}</p>
+      <p class="created">Creada el: {{ wallet.createdAt | date:'medium' }}</p>
+    </div>
+  </div>
 
-      <ng-container matColumnDef="createdAt">
-        <th mat-header-cell *matHeaderCellDef>Creada el</th>
-        <td mat-cell *matCellDef="let element">{{ element.createdAt | date:'medium' }}</td>
-      </ng-container>
+  <!-- BOTONES DE BANCOS -->
+  <div class="banks-title">
+    <h3>Bancos conectados</h3>
+  </div>
 
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Acciones</th>
-        <td mat-cell *matCellDef="let element">
-          <button mat-icon-button color="warn" (click)="deleteWallet()">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </td>
-      </ng-container>
+  <div class="banks-list">
+    <button
+      class="bank-tag"
+      *ngFor="let b of banks"
+      mat-stroked-button
+      color="primary"
+      (click)="goToBank(b.id)">
+      {{ b.name }}
+    </button>
+  </div>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-    </table>
-  </mat-card-content>
+  <p *ngIf="banks.length === 0" class="no-banks">No hay bancos registrados.</p>
+
+  <!-- SECCION DE PORCENTAJES -->
+  <div class="progress-section" *ngIf="banks.length > 0 && wallet">
+
+    <h3>Origen de fondos</h3>
+    <p class="progress-desc">Distribución del dinero proveniente de tus bancos</p>
+
+    <div *ngFor="let item of bankProgress" class="progress-item">
+      <div class="progress-info">
+        <span class="progress-bank">{{ item.bankName }}</span>
+        <span class="progress-percent">{{ item.percent }}%</span>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="item.percent"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTON ELIMINAR WALLET -->
+  <div class="delete-container" *ngIf="wallet">
+    <button mat-stroked-button color="warn" (click)="deleteWallet()">
+      <mat-icon>delete</mat-icon>
+      Eliminar Billetera
+    </button>
+  </div>
+
 </mat-card>

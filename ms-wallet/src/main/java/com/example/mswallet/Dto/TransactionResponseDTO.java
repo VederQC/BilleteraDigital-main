@@ -18,4 +18,8 @@ public class TransactionResponseDTO {
     private BigDecimal amount;
     private String description;
     private LocalDateTime transactionDate;
+
+    // ⭐ AGREGADO (NO EXISTÍA)
+    private BigDecimal newBankBalance;
+    private BigDecimal newWalletBalance;
 }

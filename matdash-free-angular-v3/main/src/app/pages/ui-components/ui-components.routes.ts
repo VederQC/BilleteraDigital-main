@@ -5,6 +5,7 @@ export const UiComponentsRoutes: Routes = [
   {
     path: '',
     children: [
+
       {
         path: '',
         redirectTo: 'wallet',
@@ -16,16 +17,25 @@ export const UiComponentsRoutes: Routes = [
         path: 'wallet',
         loadComponent: () =>
           import('src/app/pages/ui-components/tables/tables.component').then(
-            (m) => m.AppTablesComponent
+            m => m.AppTablesComponent
           ),
       },
 
-      // 🟢 TRANSACTIONS (nombre correcto)
+      // 🟢 BANK DETAIL (RUTA CORRECTA)
+      {
+        path: 'bank/:id',
+        loadComponent: () =>
+          import('src/app/pages/ui-components/banks/bank-detail.component').then(
+            m => m.BankDetailComponent
+          ),
+      },
+
+      // 🟢 TRANSACTIONS
       {
         path: 'transactions',
         loadComponent: () =>
           import('./transactions/transactions.component').then(
-            (m) => m.TransactionsComponent
+            m => m.TransactionsComponent
           ),
       },
 
@@ -34,7 +44,7 @@ export const UiComponentsRoutes: Routes = [
         path: 'events',
         loadComponent: () =>
           import('./events/events.component').then(
-            (m) => m.EventsComponent
+            m => m.EventsComponent
           ),
       },
 
@@ -43,21 +53,24 @@ export const UiComponentsRoutes: Routes = [
         path: 'goals',
         loadComponent: () =>
           import('./goals/goals.component').then(
-            (m) => m.GoalsComponent
+            m => m.GoalsComponent
           ),
       },
-        {
-  path: 'menu',
-  component :AppMenuComponent
-  
-    
-},
-   {
+
+      // 🟢 MENU
+      {
+        path: 'menu',
+        component: AppMenuComponent
+      },
+
+      // 🟢 SUBCATEGORIAS
+      {
         path: 'subcategorias',
         loadComponent: () =>
-          import('./subcategorias/subcategorias.component')
-            .then((m) => m.AppSubcategoriasComponent),
-   },
+          import('./subcategorias/subcategorias.component').then(
+            m => m.AppSubcategoriasComponent
+          ),
+      },
     ],
   },
 ];

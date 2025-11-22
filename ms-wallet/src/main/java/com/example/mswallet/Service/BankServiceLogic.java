@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,29 +37,31 @@ public class BankServiceLogic {
     private final UserBankIncomeRepository incomeRepo;
     private final WalletRepository walletRepo;
     private final TransactionRepository txRepo;
-    private final BankRepository bankRepository;  // ⭐ NECESARIO PARA OBTENER EL NOMBRE DEL BANCO
+    private final BankRepository bankRepository;
 
+    // ============================================================
     // 1) AGREGAR DINERO AL BANCO
+    // ============================================================
     @Transactional
     public UserBankIncome addIncome(BankIncomeRequestDTO dto) {
 
-        // 1. Registrar historial
+        // registrar historial
         UserBankIncome income = UserBankIncome.builder()
                 .userId(dto.getUserId())
                 .bankId(dto.getBankId())
-                .amount(dto.getAmount())
+                .amount(dto.getAmount())                // → positivo
                 .description(dto.getDescription())
                 .createdAt(LocalDateTime.now())
                 .build();
 
         incomeRepo.save(income);
 
-        // 2. Actualizar SALDO TOTAL del banco
+        // saldo total
         UserBankBalance balance = balanceRepo.findByUserIdAndBankId(dto.getUserId(), dto.getBankId())
                 .orElseGet(() -> UserBankBalance.builder()
                         .userId(dto.getUserId())
                         .bankId(dto.getBankId())
-                        .balance(dto.getAmount())
+                        .balance(BigDecimal.ZERO)
                         .build());
 
         balance.setBalance(balance.getBalance().add(dto.getAmount()));
@@ -67,7 +70,9 @@ public class BankServiceLogic {
         return income;
     }
 
-    // 2) OBTENER HISTORIAL DE UN BANCO
+    // ============================================================
+    // 2) OBTENER HISTORIAL
+    // ============================================================
     public List<BankIncomeResponseDTO> getIncomeHistory(Long userId, Long bankId) {
         return incomeRepo.findByUserIdAndBankId(userId, bankId)
                 .stream()
@@ -82,11 +87,13 @@ public class BankServiceLogic {
                 .collect(Collectors.toList());
     }
 
+    // ============================================================
     // 3) TRANSFERIR A WALLET
+    // ============================================================
     @Transactional
     public TransactionResponseDTO transferToWallet(BankTransferDTO dto) {
 
-        // 1. Validar saldo del banco
+        // validar saldo
         UserBankBalance balance = balanceRepo.findByUserIdAndBankId(dto.getUserId(), dto.getBankId())
                 .orElseThrow(() -> new ResourceNotFoundException("No existe saldo en este banco"));
 
@@ -94,37 +101,43 @@ public class BankServiceLogic {
             throw new IllegalStateException("Fondos insuficientes en el banco");
         }
 
-        // 2. Restar del banco
+        // RESTAR DEL BANCO
         balance.setBalance(balance.getBalance().subtract(dto.getAmount()));
         balanceRepo.save(balance);
 
-        // 3. Sumar a la wallet
+        // ⭐⭐⭐ REGISTRAR SALIDA EN HISTORIAL DEL BANCO (NEGATIVO)
+        UserBankIncome salida = UserBankIncome.builder()
+                .userId(dto.getUserId())
+                .bankId(dto.getBankId())
+                .amount(dto.getAmount().negate())   // → NEGATIVO
+                .description("Transferencia a Wallet")
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        incomeRepo.save(salida);
+
+        // SUMAR A WALLET
         Wallet wallet = walletRepo.findByUserId(dto.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet no encontrada"));
 
         wallet.setBalance(wallet.getBalance().add(dto.getAmount()));
         walletRepo.save(wallet);
 
-        // ⭐⭐ 4. Obtener el nombre del banco ⭐⭐
+        // obtener banco
         Bank bank = bankRepository.findById(dto.getBankId())
                 .orElseThrow(() -> new ResourceNotFoundException("Banco no encontrado"));
 
-        String bankName = bank.getName();
-
-        // 5. Registrar transacción
+        // registrar transacción en WALLET
         Transaction tx = new Transaction();
         tx.setUserId(dto.getUserId());
         tx.setWalletId(wallet.getId());
         tx.setAmount(dto.getAmount());
         tx.setType(Transaction.TransactionType.INCOME);
-
-        // ⭐⭐ Aquí añadimos el nombre del banco ⭐⭐
-        tx.setDescription("Transferencia desde banco: " + bankName);
-
+        tx.setDescription("Transferencia desde banco: " + bank.getName());
         tx.setTransactionDate(LocalDateTime.now());
         txRepo.save(tx);
 
-        // 6. Respuesta
+        // respuesta
         TransactionResponseDTO res = new TransactionResponseDTO();
         res.setId(tx.getId());
         res.setUserId(tx.getUserId());
@@ -133,6 +146,24 @@ public class BankServiceLogic {
         res.setType(tx.getType());
         res.setDescription(tx.getDescription());
         res.setTransactionDate(tx.getTransactionDate());
+
+        // enviar nuevos saldos
+        res.setNewBankBalance(balance.getBalance());
+        res.setNewWalletBalance(wallet.getBalance());
+
         return res;
     }
+
+    // ============================================================
+    // 4) OBTENER SALDO TOTAL
+    // ============================================================
+    public UserBankBalance getBankBalance(Long userId, Long bankId) {
+        return balanceRepo.findByUserIdAndBankId(userId, bankId)
+                .orElseGet(() -> UserBankBalance.builder()
+                        .userId(userId)
+                        .bankId(bankId)
+                        .balance(BigDecimal.ZERO)
+                        .build());
+    }
+
 }

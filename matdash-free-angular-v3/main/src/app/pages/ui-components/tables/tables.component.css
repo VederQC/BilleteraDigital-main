@@ -1,20 +1,116 @@
-.header {
+.wallet-card {
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+  background: #ffffff;
+}
+
+/* HEADER */
+.wallet-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.create-button {
-  background-color: #2ecc71 !important; /* verde */
-  color: white;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+.subtitle {
+  margin-top: -4px;
+  color: #777;
 }
 
-mat-card {
-  position: relative;
+/* RESUMEN DE WALLET */
+.wallet-summary {
+  display: flex;
+  align-items: center;
+  margin: 25px 0;
   padding: 20px;
+  background: #f7f9ff;
+  border-radius: 12px;
+  border: 1px solid #e3e7ff;
 }
 
-table {
-  margin-top: 20px;
+.wallet-icon {
+  font-size: 60px;
+  margin-right: 20px;
+}
+
+.wallet-info h1.balance {
+  margin: 4px 0;
+  color: #673ab7;
+  font-size: 34px;
+}
+
+.currency, .created {
+  color: #666;
+  margin: 2px 0;
+}
+
+/* BANCOS */
+.banks-title {
+  margin-top: 30px;
+}
+
+.banks-list {
+  margin: 12px 0 20px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.bank-tag {
+  border-radius: 50px !important;
+}
+
+.no-banks {
+  color: #777;
+  font-style: italic;
+}
+
+/* PROGRESO */
+.progress-section {
+  margin-top: 25px;
+}
+
+.progress-desc {
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.progress-item {
+  margin-bottom: 16px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.progress-bank {
+  font-weight: 600;
+}
+
+.progress-percent {
+  font-weight: bold;
+  color: #2ecc71;
+}
+
+/* BARRA */
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #eaeaea;
+  border-radius: 6px;
+}
+
+.progress-fill {
+  height: 10px;
+  background: linear-gradient(90deg, #6c63ff, #3f3dff);
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+
+/* BOTON ELIMINAR */
+.delete-container {
+  margin-top: 40px;
+  text-align: right;
 }

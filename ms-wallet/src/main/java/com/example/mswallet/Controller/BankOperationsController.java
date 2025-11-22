@@ -4,6 +4,7 @@ import com.example.mswallet.Dto.BankIncomeRequestDTO;
 import com.example.mswallet.Dto.BankIncomeResponseDTO;
 import com.example.mswallet.Dto.BankTransferDTO;
 import com.example.mswallet.Dto.TransactionResponseDTO;
+import com.example.mswallet.Entity.UserBankBalance;
 import com.example.mswallet.Service.BankServiceLogic;
 
 import lombok.RequiredArgsConstructor;
@@ -41,4 +42,14 @@ public class BankOperationsController {
 
         return ResponseEntity.ok(bankService.transferToWallet(dto));
     }
+
+    // 4) OBTENER SALDO ACTUAL DEL BANCO
+    @GetMapping("/balance/{userId}/{bankId}")
+    public ResponseEntity<UserBankBalance> getBalance(
+            @PathVariable Long userId,
+            @PathVariable Long bankId) {
+
+        return ResponseEntity.ok(bankService.getBankBalance(userId, bankId));
+    }
+
 }

@@ -10,10 +10,11 @@ export enum TransactionType {
 export interface TransactionRequest {
   userId: number;
 
-  categoryId: number | null;      // ⭐ Ahora acepta NULL
-  subcategoryId: number | null;   // ⭐ Ahora acepta NULL
-  goalId?: number | null;         // ⭐ Si lo usabas en tu backend
-  eventId?: number | null;        // ⭐ Nuevo campo de tu compañero
+  categoryId: number | null;      // ⭐ Permitidos null para objetivos
+  subcategoryId: number | null;   // ⭐ Permitidos null si no aplica
+
+  goalId?: number | null;         // ⭐ Para aportar a metas
+  eventId?: number | null;        // ⭐ Compatible con eventos
 
   type: TransactionType;
   amount: number;
@@ -38,11 +39,12 @@ export class TransactionService {
 
   constructor(private http: HttpClient) {}
 
+  /** Crear transacción */
   createTransaction$(payload: TransactionRequest): Observable<TransactionResponse> {
-    // urlInterceptor agrega environment.apiUrl
     return this.http.post<TransactionResponse>('transactions', payload);
   }
 
+  /** Listar transacciones por usuario + filtro por fecha */
   getUserTransactions$(
     userId: number,
     startDate?: string,
@@ -51,13 +53,8 @@ export class TransactionService {
 
     let params = new HttpParams();
 
-    if (startDate) {
-      params = params.set('startDate', startDate);
-    }
-
-    if (endDate) {
-      params = params.set('endDate', endDate);
-    }
+    if (startDate) params = params.set('startDate', startDate);
+    if (endDate) params = params.set('endDate', endDate);
 
     return this.http.get<TransactionResponse[]>(
       `transactions/user/${userId}`,

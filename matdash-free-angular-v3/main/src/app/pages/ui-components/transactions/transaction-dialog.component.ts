@@ -7,7 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { TransactionService, TransactionType } from '../../../providers/services/transaction/transaction.service';
-import { CategoryService } from 'src/app/providers/services/category/ category.service';
+import { CategoryService } from 'src/app/providers/services/category/category.service';
 import { GoalsService } from 'src/app/providers/services/goals/GoalsService';
 
 @Component({

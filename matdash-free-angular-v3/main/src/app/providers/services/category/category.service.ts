@@ -12,8 +12,6 @@ import { Subcategory } from '../../models/subcategory.model';
 export class CategoryService extends EntityDataService<Category> {
 
   constructor(protected override httpClient: HttpClient) {
-    // 👉 "categories" será el endpoint base
-    // Todas las operaciones del CRUD genérico usarán:  /categories
     super(httpClient, 'categories');
   }
 
@@ -24,6 +22,11 @@ export class CategoryService extends EntityDataService<Category> {
   /** Obtener todas las categorías por usuario */
   public getCategoriesByUser$(userId: number): Observable<Category[]> {
     return this.httpClient.get<Category[]>(`categories/user/${userId}`);
+  }
+
+  /** Buscar categoría por nombre */
+  public getCategoryByName$(name: string): Observable<Category> {
+    return this.httpClient.get<Category>(`categories/search?name=${name}`);
   }
 
   /** Crear categoría */

@@ -1,6 +1,7 @@
 package com.example.mscategories.Controller;
 
 import com.example.mscategories.DTO.*;
+import com.example.mscategories.Entity.Category;
 import com.example.mscategories.Service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -106,4 +107,9 @@ public class CategoryController {
         categoryService.deleteSubcategory(categoryId, subId);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/search")
+    public ResponseEntity<Category> getCategoryByName(@RequestParam String name) {
+        return ResponseEntity.ok(categoryService.getCategoryByName(name));
+    }
+
 }

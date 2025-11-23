@@ -30,7 +30,11 @@ spring:
         - id: ms-wallet-service
           uri: lb://ms-wallet-service
           predicates:
-            - Path=/transactions/**, /wallets/** , /bancos/** ,/bank-ops/**
+            - Path=/transactions/**
+            - Path=/wallets/**
+            - Path=/bancos/**
+            - Path=/bank-ops/**
+
           filters:
             - name: AuthFilter
 

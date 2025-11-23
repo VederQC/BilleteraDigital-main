@@ -6,6 +6,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog'; // 👈 IMPORTANTE
 import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+
 import { WalletService } from '../../../providers/services/wallet/wallet.service';
 
 @Component({
@@ -17,7 +19,9 @@ import { WalletService } from '../../../providers/services/wallet/wallet.service
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatDialogModule, // 👈 AGREGA ESTE MÓDULO
+    MatDialogModule, 
+    MatIconModule
+// 👈 AGREGA ESTE MÓDULO
   ],
   template: `
     <h2 mat-dialog-title>Crear Nueva Billetera</h2>

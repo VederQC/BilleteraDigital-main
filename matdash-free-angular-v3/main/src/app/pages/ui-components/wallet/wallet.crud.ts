@@ -1,12 +1,16 @@
 import { Component } from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { WalletService, Wallet } from '../../../providers/services/wallet/wallet.service';
-import {CommonModule} from "@angular/common";
-import {MatCardModule} from "@angular/material/card";
-import {MatFormFieldModule} from "@angular/material/form-field";
-import {MatInputModule} from "@angular/material/input";
-import {MatButtonModule} from "@angular/material/button";
 
+import { CommonModule } from "@angular/common";
+import { MatCardModule } from "@angular/material/card";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatInputModule } from "@angular/material/input";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+
+import { Router } from '@angular/router';
+import { BankOperationsService } from 'src/app/providers/services/bank/bank-operations.service';
 
 
 @Component({
@@ -14,28 +18,69 @@ import {MatButtonModule} from "@angular/material/button";
   templateUrl: './wallet-crud.component.html',
   imports: [
     CommonModule,
-    ReactiveFormsModule ,
+    ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIconModule
   ]
 })
 export class WalletCrudComponent {
+
   walletForm: FormGroup;
   wallet?: Wallet;
 
-  constructor(private fb: FormBuilder, private walletService: WalletService) {
+  banks: any[] = [];
+  userIdLogged!: number;
+
+  constructor(
+    private fb: FormBuilder,
+    private walletService: WalletService,
+    private bankOpsService: BankOperationsService,
+    private router: Router
+  ) {
+
     this.walletForm = this.fb.group({
       userId: ['', Validators.required],
       currency: ['pen', Validators.required],
     });
+
+    // Obtener usuario logueado
+    this.userIdLogged = Number(localStorage.getItem('userId'));
+
+    // Cargar bancos desde la BD
+    this.loadBanks();
   }
 
+  // =============================================
+  // 🔹 Cargar bancos
+  // =============================================
+  loadBanks() {
+    this.bankOpsService.getBanks$().subscribe({
+      next: (res) => {
+        console.log("Bancos obtenidos:", res);
+        this.banks = res;
+      },
+      error: (err) => console.error('Error cargando bancos:', err)
+    });
+  }
+
+  // =============================================
+  // 🔹 Navegar al detalle del banco
+  // =============================================
+  goToBank(bankId: number) {
+    this.router.navigate(['/wallet/bank', bankId]);
+  }
+
+  // =============================================
+  // 🔹 Crear wallet
+  // =============================================
   onSubmit(): void {
     if (this.walletForm.invalid) return;
 
     const walletData = this.walletForm.value;
+
     this.walletService.createWallet$(walletData).subscribe({
       next: (wallet) => {
         console.log('Wallet creada:', wallet);
@@ -49,6 +94,9 @@ export class WalletCrudComponent {
     });
   }
 
+  // =============================================
+  // 🔹 Eliminar wallet
+  // =============================================
   onDelete(): void {
     const userId = this.walletForm.get('userId')?.value;
     if (!userId) return;

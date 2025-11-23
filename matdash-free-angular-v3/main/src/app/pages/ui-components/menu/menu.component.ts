@@ -4,9 +4,9 @@ import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
-
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatCardModule } from '@angular/material/card';  // ⭐ IMPORTANTE PARA LAS TARJETAS
 
 import { FormsModule } from '@angular/forms';
 import { jwtDecode } from 'jwt-decode';
@@ -14,7 +14,7 @@ import { jwtDecode } from 'jwt-decode';
 import { Category } from 'src/app/providers/models/category.model';
 import { AuthService } from 'src/app/providers/services/auth/auth.service';
 
-import { Router, RouterOutlet } from '@angular/router';  // ⭐ AÑADIDO AQUI
+import { Router, RouterOutlet } from '@angular/router';
 import { CategoryService } from 'src/app/providers/services/category/category.service';
 
 @Component({
@@ -32,7 +32,8 @@ import { CategoryService } from 'src/app/providers/services/category/category.se
     MatButtonModule,
     MatDialogModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    MatCardModule     // ⭐ AQUI ESTA EL FIX
   ]
 })
 export class AppMenuComponent implements OnInit {
@@ -57,7 +58,7 @@ export class AppMenuComponent implements OnInit {
     private categoryService: CategoryService,
     private authService: AuthService,
     private dialog: MatDialog,
-    private router: Router                           // ⭐ AÑADIDO AQUI
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -79,14 +80,12 @@ export class AppMenuComponent implements OnInit {
     });
   }
 
-  // 🟣 Abrir para CREAR
   openDialog(): void {
     this.editingId = null;
     this.form = { name: '', icon: '', color: '#000000' };
     this.dialogRef = this.dialog.open(this.dialogTemplate);
   }
 
-  // 🟡 Abrir para EDITAR
   openEditDialog(category: Category): void {
     this.editingId = category.id;
 
@@ -99,7 +98,6 @@ export class AppMenuComponent implements OnInit {
     this.dialogRef = this.dialog.open(this.dialogTemplate);
   }
 
-  // 🟢 Guardar (CREAR o EDITAR)
   saveCategory(): void {
     const payload = {
       ...this.form,
@@ -132,10 +130,9 @@ export class AppMenuComponent implements OnInit {
     });
   }
 
-  // ⭐⭐⭐ IR A SUBCATEGORÍAS ⭐⭐⭐
- irASubcategorias(id: number) {
-  this.router.navigate(['/app/ui-components/subcategorias'], {
-    queryParams: { categoryId: id }
-  });
-}
+  irASubcategorias(id: number) {
+    this.router.navigate(['/app/ui-components/subcategorias'], {
+      queryParams: { categoryId: id }
+    });
+  }
 }

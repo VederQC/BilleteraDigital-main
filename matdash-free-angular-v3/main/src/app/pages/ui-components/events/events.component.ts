@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { MatTableModule } from '@angular/material/table';
@@ -11,6 +11,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 
 import { FormsModule } from '@angular/forms';
 import { jwtDecode } from 'jwt-decode';
+import { MatCardModule } from '@angular/material/card';
 
 import { Event } from 'src/app/providers/models/event.model';
 import { EventService } from 'src/app/providers/services/events/events.service';
@@ -18,7 +19,6 @@ import { AuthService } from 'src/app/providers/services/auth/auth.service';
 import { WalletService } from 'src/app/providers/services/wallet/wallet.service';
 import { TransactionService } from 'src/app/providers/services/transaction/transaction.service';
 import { TransactionType } from '../../../providers/services/transaction/transaction.service';
-
 
 @Component({
   selector: 'app-events',
@@ -28,6 +28,7 @@ import { TransactionType } from '../../../providers/services/transaction/transac
   imports: [
     CommonModule,
     FormsModule,
+    MatCardModule,
     MatTableModule,
     MatButtonModule,
     MatDialogModule,
@@ -38,7 +39,9 @@ import { TransactionType } from '../../../providers/services/transaction/transac
 })
 export class EventsComponent implements OnInit {
 
-  @ViewChild('dialogTemplate') dialogTemplate: any;
+  // 🔥 FIX AGREGADO: static: false + TemplateRef
+  @ViewChild('dialogTemplate', { static: false }) dialogTemplate!: TemplateRef<any>;
+
   dialogRef!: MatDialogRef<any>;
 
   events: Event[] = [];
@@ -59,7 +62,7 @@ export class EventsComponent implements OnInit {
   constructor(
     private eventService: EventService,
     private walletService: WalletService,
-    private txService: TransactionService,      // ⭐ AGREGADO
+    private txService: TransactionService,
     private dialog: MatDialog,
     private authService: AuthService
   ) {}
@@ -95,13 +98,28 @@ export class EventsComponent implements OnInit {
 
   // 🟣 Abrir para CREAR
   openDialog(): void {
+
+    // 🔥 FIX: validar que el template ya existe
+    if (!this.dialogTemplate) {
+      console.error("dialogTemplate todavía no está listo");
+      return;
+    }
+
     this.editingId = null;
     this.form = { name: '', description: '', budget: 0, startDate: '', endDate: '' };
+
     this.dialogRef = this.dialog.open(this.dialogTemplate);
   }
 
   // 🟡 Abrir para EDITAR
   openEditDialog(event: Event): void {
+
+    // 🔥 FIX: evitar undefined → evita error ɵcmp
+    if (!this.dialogTemplate) {
+      console.error("dialogTemplate todavía no está listo");
+      return;
+    }
+
     this.editingId = event.id;
 
     this.form = {
@@ -150,12 +168,10 @@ export class EventsComponent implements OnInit {
     const num = Number(amount);
     if (isNaN(num)) return alert('Monto inválido');
 
-    // 1️⃣ Actualizar el gasto del evento
     this.eventService.updateSpent$(event.id, { eventId: event.id, amount: num })
       .subscribe({
         next: () => {
 
-          // 2️⃣ Registrar transacción automática (EXPENSE)
           this.txService.createTransaction$({
             userId: this.userId,
             categoryId: null,
@@ -169,7 +185,6 @@ export class EventsComponent implements OnInit {
             error: (err) => console.error("Error creando transacción:", err)
           });
 
-          // 3️⃣ Descontar de la billetera del usuario
           this.walletService.subtractFromWallet$(this.userId, num)
             .subscribe({
               next: () => {

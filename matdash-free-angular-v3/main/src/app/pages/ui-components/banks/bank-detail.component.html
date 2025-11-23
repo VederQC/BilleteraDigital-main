@@ -1,0 +1,95 @@
+<mat-card class="cardWithShadow">
+  <mat-card-content>
+
+    <!-- ENCABEZADO -->
+    <div class="bank-header">
+      <div class="bank-info">
+        <h2>{{ bank?.name }}</h2>
+        <p class="icon">{{ bank?.icon }}</p>
+
+        <!-- ⭐ SALDO TOTAL DEL BANCO -->
+        <h3 class="bank-balance">
+          Saldo total: PEN {{ bankBalance | number:'1.2-2' }}
+        </h3>
+
+      </div>
+
+      <div class="actions">
+        <button mat-raised-button color="primary" (click)="toggleAddForm()">
+          + Agregar dinero
+        </button>
+
+        <button mat-raised-button color="accent" (click)="toggleTransferForm()">
+          Transferir a Wallet
+        </button>
+      </div>
+    </div>
+
+    <!-- ⭐ FORMULARIO AGREGAR DINERO -->
+    <div class="bank-form" *ngIf="showAddForm">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Monto</mat-label>
+        <input matInput type="number" [(ngModel)]="amount">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Descripción</mat-label>
+        <input matInput [(ngModel)]="description">
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" (click)="submitIncome()">
+        Guardar ingreso
+      </button>
+
+      <button mat-button (click)="toggleAddForm()">
+        Cancelar
+      </button>
+    </div>
+
+    <!-- ⭐ FORMULARIO TRANSFERIR -->
+    <div class="bank-form" *ngIf="showTransferForm">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>Monto a transferir</mat-label>
+        <input matInput type="number" [(ngModel)]="transferAmount">
+      </mat-form-field>
+
+      <button mat-raised-button color="accent" (click)="submitTransfer()">
+        Transferir
+      </button>
+
+      <button mat-button (click)="toggleTransferForm()">
+        Cancelar
+      </button>
+    </div>
+
+    <hr class="divider"/>
+
+    <!-- HISTORIAL -->
+    <h3>Historial de Ingresos</h3>
+
+    <table class="history-table" *ngIf="incomes.length > 0">
+      <thead>
+        <tr>
+          <th>Monto</th>
+          <th>Descripción</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let item of incomes"
+            [ngClass]="{ 'ingreso': item.amount > 0, 'salida': item.amount < 0 }">
+
+          <td>PEN {{ item.amount | number:'1.2-2' }}</td>
+          <td>{{ item.description }}</td>
+          <td>{{ item.createdAt | date:'medium' }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p *ngIf="incomes.length === 0" class="empty-text">
+      No hay ingresos registrados en este banco.
+    </p>
+
+  </mat-card-content>
+</mat-card>

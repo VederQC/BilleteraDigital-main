@@ -65,51 +65,7 @@
   font-style: italic;
 }
 
-/* PROGRESO */
-.progress-section {
-  margin-top: 25px;
-}
-
-.progress-desc {
-  color: #666;
-  margin-bottom: 12px;
-}
-
-.progress-item {
-  margin-bottom: 16px;
-}
-
-.progress-info {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.progress-bank {
-  font-weight: 600;
-}
-
-.progress-percent {
-  font-weight: bold;
-  color: #2ecc71;
-}
-
-/* BARRA */
-.progress-bar {
-  width: 100%;
-  height: 10px;
-  background: #eaeaea;
-  border-radius: 6px;
-}
-
-.progress-fill {
-  height: 10px;
-  background: linear-gradient(90deg, #6c63ff, #3f3dff);
-  border-radius: 6px;
-  transition: width 0.4s ease;
-}
-
-/* BOTON ELIMINAR */
+/* BOTÓN ELIMINAR */
 .delete-container {
   margin-top: 40px;
   text-align: right;

@@ -14,9 +14,7 @@
 
   <!-- RESUMEN DE WALLET -->
   <div class="wallet-summary" *ngIf="wallet">
-    <div class="wallet-icon">
-      💰
-    </div>
+    <div class="wallet-icon">💰</div>
 
     <div class="wallet-info">
       <h3>Balance total</h3>
@@ -27,7 +25,7 @@
     </div>
   </div>
 
-  <!-- BOTONES DE BANCOS -->
+  <!-- BANCOS CONECTADOS -->
   <div class="banks-title">
     <h3>Bancos conectados</h3>
   </div>
@@ -45,26 +43,7 @@
 
   <p *ngIf="banks.length === 0" class="no-banks">No hay bancos registrados.</p>
 
-  <!-- SECCION DE PORCENTAJES -->
-  <div class="progress-section" *ngIf="banks.length > 0 && wallet">
-
-    <h3>Origen de fondos</h3>
-    <p class="progress-desc">Distribución del dinero proveniente de tus bancos</p>
-
-    <div *ngFor="let item of bankProgress" class="progress-item">
-      <div class="progress-info">
-        <span class="progress-bank">{{ item.bankName }}</span>
-        <span class="progress-percent">{{ item.percent }}%</span>
-      </div>
-
-      <div class="progress-bar">
-        <div class="progress-fill" [style.width.%]="item.percent"></div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- BOTON ELIMINAR WALLET -->
+  <!-- BOTÓN ELIMINAR -->
   <div class="delete-container" *ngIf="wallet">
     <button mat-stroked-button color="warn" (click)="deleteWallet()">
       <mat-icon>delete</mat-icon>

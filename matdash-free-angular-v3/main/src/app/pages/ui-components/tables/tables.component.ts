@@ -28,12 +28,11 @@ import { BankOperationsService } from 'src/app/providers/services/bank/bank-oper
   ]
 })
 export class AppTablesComponent implements OnInit {
+
   wallet?: Wallet;
   userId: number | null = null;
 
-  banks: any[] = []; // ⭐ Lista de bancos
-  bankProgress: any[] = []; // ⭐ Porcentajes calculados
-
+  banks: any[] = [];
   displayedColumns = ['id', 'userId', 'balance', 'currency', 'createdAt', 'actions'];
 
   constructor(
@@ -49,15 +48,12 @@ export class AppTablesComponent implements OnInit {
     this.loadBanks();
   }
 
-  // ============================================================
-  // 🔹 CARGAR BANCOS
-  // ============================================================
+  // ================================
+  // CARGAR BANCOS
+  // ================================
   private loadBanks(): void {
     this.bankOps.getBanks$().subscribe({
-      next: (data) => {
-        this.banks = data;
-        this.calculateFakeProgress(); // ⭐ Generamos porcentajes temporales
-      },
+      next: (data) => { this.banks = data; },
       error: (err) => console.error('Error al cargar bancos:', err)
     });
   }
@@ -66,9 +62,9 @@ export class AppTablesComponent implements OnInit {
     this.router.navigate(['/app/ui-components/bank', bankId]);
   }
 
-  // ============================================================
-  // 🔹 CARGAR WALLET
-  // ============================================================
+  // ================================
+  // CARGAR WALLET
+  // ================================
   private loadWallet(): void {
     const token = this.authService.getToken();
     if (!token) return;
@@ -78,30 +74,15 @@ export class AppTablesComponent implements OnInit {
 
     if (!isNaN(this.userId!)) {
       this.walletService.getWalletByUserId$(this.userId!).subscribe({
-        next: (data) => {
-          this.wallet = data;
-          this.calculateFakeProgress(); // ⭐ recalcular si wallet cambia
-        },
+        next: (data) => (this.wallet = data),
         error: () => (this.wallet = undefined)
       });
     }
   }
 
-  // ============================================================
-  // ⭐ CALCULAR PORCENTAJES (FAKES TEMPORALES)
-  // ============================================================
-  private calculateFakeProgress(): void {
-    if (!this.wallet || this.banks.length === 0) return;
-
-    this.bankProgress = this.banks.map((b) => ({
-      bankName: b.name,
-      percent: Math.floor(Math.random() * 70) + 10 // 10% - 80%
-    }));
-  }
-
-  // ============================================================
-  // 🔹 CREAR WALLET
-  // ============================================================
+  // ================================
+  // CREAR WALLET
+  // ================================
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(WalletDialogComponent, {
       width: '400px',
@@ -113,9 +94,9 @@ export class AppTablesComponent implements OnInit {
     });
   }
 
-  // ============================================================
-  // 🔹 ELIMINAR WALLET
-  // ============================================================
+  // ================================
+  // ELIMINAR WALLET
+  // ================================
   deleteWallet(): void {
     if (!this.userId) return;
 

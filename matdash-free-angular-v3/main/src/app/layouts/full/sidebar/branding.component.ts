@@ -7,11 +7,7 @@ import { RouterModule } from '@angular/router';
   imports: [RouterModule],
   template: `
     <a [routerLink]="['/']">
-      <img
-        src="./assets/images/logos/logo.svg"
-        class="align-middle m-2"
-        alt="logo"
-      />
+     
     </a>
   `,
 })

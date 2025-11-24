@@ -12,6 +12,9 @@ import { UserBankIncome } from 'src/app/providers/models/user-bank-income.model'
 import { UserBankBalance } from 'src/app/providers/models/user-bank-balance.model';
 import { BankOperationsService } from 'src/app/providers/services/bank/bank-operations.service';
 
+import { AuthService } from 'src/app/providers/services/auth/auth.service';
+import { jwtDecode } from 'jwt-decode';
+
 @Component({
   selector: 'app-bank-detail',
   standalone: true,
@@ -29,13 +32,12 @@ import { BankOperationsService } from 'src/app/providers/services/bank/bank-oper
 export class BankDetailComponent implements OnInit {
 
   bankId!: number;
+  userId!: number;
+
   bank?: Bank;
   incomes: UserBankIncome[] = [];
-
-  // ⭐ Saldo total del banco
   bankBalance: number = 0;
 
-  // FORMULARIOS
   showAddForm = false;
   showTransferForm = false;
 
@@ -45,27 +47,40 @@ export class BankDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private bankOps: BankOperationsService
+    private bankOps: BankOperationsService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.loadUserId();                // 👈 IGUALITO QUE CATEGORIES
     this.bankId = Number(this.route.snapshot.paramMap.get('id'));
     this.loadBankData();
   }
 
+  // =====================================
+  //   🔥 Igualito al método de categorías
+  // =====================================
+  loadUserId(): void {
+    const token = this.authService.getToken();
+    if (!token) return;
+
+    const decoded: any = jwtDecode(token);
+    this.userId = Number(decoded.id || decoded.sub);  // 👈 MISMA LÓGICA QUE CATEGORIES
+  }
+
   loadBankData(): void {
-    // ➤ Banco
+
     this.bankOps.getBankById$(this.bankId).subscribe({
       next: (bank) => this.bank = bank
     });
 
-    // ➤ Historial
-    this.bankOps.getIncomeHistory$(8, this.bankId).subscribe({
+    // ➤ Historial del usuario REAL
+    this.bankOps.getIncomeHistory$(this.userId, this.bankId).subscribe({
       next: (data) => this.incomes = data
     });
 
-    // ⭐ ➤ SALDO TOTAL (YA FUNCIONA PORQUE EL BACKEND YA TIENE EL ENDPOINT)
-    this.bankOps.getBankBalance$(8, this.bankId).subscribe({
+    // ➤ Saldo filtrado POR USUARIO
+    this.bankOps.getBankBalance$(this.userId, this.bankId).subscribe({
       next: (data: UserBankBalance) => {
         this.bankBalance = Number(data.balance);
       }
@@ -82,26 +97,21 @@ export class BankDetailComponent implements OnInit {
     this.showAddForm = false;
   }
 
-  // GUARDAR INGRESO
+  // ➤ Guardar ingreso
   submitIncome() {
-    if (!this.amount || this.amount <= 0) {
-      alert("Monto inválido");
-      return;
-    }
+    if (!this.amount || this.amount <= 0) return alert("Monto inválido");
+    if (!this.description.trim()) return alert("Descripción requerida");
 
-    if (!this.description.trim()) {
-      alert("Descripción requerida");
-      return;
-    }
-
-    this.bankOps.addIncomeToBank$({
-      userId: 8,
+    const payload = {
+      userId: this.userId,     // 👈 Usuario filtrado igual que en categorías
       bankId: this.bankId,
       amount: this.amount,
       description: this.description
-    }).subscribe({
+    };
+
+    this.bankOps.addIncomeToBank$(payload).subscribe({
       next: () => {
-        this.loadBankData();  
+        this.loadBankData();
         this.showAddForm = false;
         this.amount = 0;
         this.description = '';
@@ -109,20 +119,22 @@ export class BankDetailComponent implements OnInit {
     });
   }
 
-  // TRANSFERIR
+  // ➤ Transferir a Wallet
   submitTransfer() {
     if (!this.transferAmount || this.transferAmount <= 0) {
       alert("Monto inválido");
       return;
     }
 
-    this.bankOps.transferToWallet$({
-      userId: 8,
+    const payload = {
+      userId: this.userId,     // 👈 Igual que CATEGORIES
       bankId: this.bankId,
       amount: this.transferAmount
-    }).subscribe({
+    };
+
+    this.bankOps.transferToWallet$(payload).subscribe({
       next: () => {
-        this.loadBankData();  
+        this.loadBankData();
         this.showTransferForm = false;
         this.transferAmount = 0;
       }

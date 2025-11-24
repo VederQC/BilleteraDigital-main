@@ -52,6 +52,23 @@ export class AuthService {
   }
 
   // ============================
+  //     🔥 OBTENER USER ID 🔥
+  // ============================
+
+  getUserId(): number {
+    const token = this.getToken();
+    if (!token) return 0;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.userId || 0;  // ← CAMPO REAL DE TU TOKEN
+    } catch (e) {
+      console.error('Error obteniendo userId:', e);
+      return 0;
+    }
+  }
+
+  // ============================
   //       AUTH OPERATIONS
   // ============================
 
@@ -59,7 +76,6 @@ export class AuthService {
     return this.httpClient.post<TokenModels>(END_POINTS.login, credentials);
   }
 
-  // ⭐ NUEVO: REGISTRO DE USUARIO
   register(payload: { email: string; password: string }) {
     const requestBody = {
       userName: payload.email,
@@ -68,6 +84,5 @@ export class AuthService {
 
     return this.httpClient.post<any>(END_POINTS.register, requestBody);
   }
-
 
 }

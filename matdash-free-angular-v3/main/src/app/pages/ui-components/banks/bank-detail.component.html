@@ -6,7 +6,7 @@
       <h2>{{ bank?.name }}</h2>
 
       <div class="bank-icon-container">
-        <img [src]="'/assets/icons/' + bank?.icon" class="bank-icon" alt="icono">
+        <img [src]="getBankLogo(bank?.name)" class="bank-icon" alt="icono">
       </div>
 
       <h3 class="bank-balance">

@@ -11,10 +11,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 
-
 import { GoalsService } from 'src/app/providers/services/goals/GoalsService';
 import { TransactionService, TransactionType } from 'src/app/providers/services/transaction/transaction.service';
 import { AuthService } from 'src/app/providers/services/auth/auth.service';
+import { CategoryService } from 'src/app/providers/services/category/category.service';
 import { jwtDecode } from 'jwt-decode';
 
 @Component({
@@ -45,6 +45,8 @@ export class GoalsComponent implements OnInit {
   goals: any[] = [];
   userId!: number;
 
+  objetivosCategory: any = null;
+
   editingGoal: any = null;
 
   form = {
@@ -61,14 +63,19 @@ export class GoalsComponent implements OnInit {
     private goalsService: GoalsService,
     private txService: TransactionService,
     private authService: AuthService,
+    private categoryService: CategoryService,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
     this.loadUserId();
+    this.loadObjetivosCategory();
     this.loadGoals();
   }
 
+  // ===============================
+  //  CARGA ID DEL USUARIO
+  // ===============================
   private loadUserId(): void {
     const token = this.authService.getToken();
     if (!token) return;
@@ -77,16 +84,33 @@ export class GoalsComponent implements OnInit {
     this.userId = Number(decoded.id || decoded.sub);
   }
 
+  // ===============================
+  //  BUSCAR CATEGORÍA "OBJETIVOS"
+  // ===============================
+  private loadObjetivosCategory(): void {
+    this.categoryService.getCategoryByName$('objetivos').subscribe({
+      next: (res) => {
+        this.objetivosCategory = res;
+      },
+      error: () => {
+        console.warn('⚠️ No se encontró la categoría "Objetivos".');
+      }
+    });
+  }
+
+  // ===============================
+  //  LISTAR METAS
+  // ===============================
   loadGoals(): void {
     this.goalsService.getGoalsByUser$(this.userId).subscribe({
-      next: (res) => this.goals = res,
+      next: (res) => (this.goals = res),
       error: () => (this.goals = [])
     });
   }
 
-  // =======================
-  // CREAR META
-  // =======================
+  // ===============================
+  //  CREAR META
+  // ===============================
   openCreateDialog(): void {
     this.editingGoal = null;
     this.form = {
@@ -105,11 +129,7 @@ export class GoalsComponent implements OnInit {
       description: this.form.description,
       targetAmount: this.form.targetAmount,
       currentAmount: this.editingGoal ? this.editingGoal.currentAmount : 0,
-      deadline: this.form.deadline
-        ? new Date(this.form.deadline).toISOString()
-        : null,
-
-
+      deadline: this.form.deadline ? this.form.deadline : null,
       status: 'EN_PROGRESO'
     };
 
@@ -126,32 +146,32 @@ export class GoalsComponent implements OnInit {
     }
   }
 
-  // =======================
-  // EDITAR META
-  // =======================
+  // ===============================
+  //  EDITAR META
+  // ===============================
   openEditDialog(goal: any): void {
     this.editingGoal = goal;
     this.form = {
       name: goal.name,
       description: goal.description,
       targetAmount: goal.targetAmount,
-      deadline: goal.deadline ? goal.deadline.substring(0, 10) : ''
+      deadline: goal.deadline || ''
     };
     this.dialogRef = this.dialog.open(this.goalDialog);
   }
 
-  // =======================
-  // ELIMINAR META
-  // =======================
+  // ===============================
+  //  ELIMINAR META
+  // ===============================
   confirmDelete(id: number): void {
     if (!confirm('¿Eliminar esta meta?')) return;
 
     this.goalsService.deleteGoal$(id).subscribe(() => this.loadGoals());
   }
 
-  // =======================
-  // APORTAR A UNA META
-  // =======================
+  // ===============================
+  //  APORTAR A UNA META
+  // ===============================
   openAddAmountDialog(goal: any): void {
     this.selectedGoal = goal;
     this.amountToAdd = 0;
@@ -164,11 +184,16 @@ export class GoalsComponent implements OnInit {
       return;
     }
 
+    if (!this.objetivosCategory) {
+      alert('No existe la categoría OBJETIVOS.');
+      return;
+    }
+
     const txPayload = {
       userId: this.userId,
-      categoryId: 6, // categoría Objetivos
-      subcategoryId: this.selectedGoal.subcategoryId, // ✔️ subcategoría real creada automáticamente
-      goalId: this.selectedGoal.id, // ✔️ la meta real
+      categoryId: this.objetivosCategory.id,
+      subcategoryId: this.selectedGoal.subcategoryId,
+      goalId: this.selectedGoal.id,
       eventId: null,
       type: TransactionType.EXPENSE,
       amount: this.amountToAdd,
@@ -186,5 +211,4 @@ export class GoalsComponent implements OnInit {
       }
     });
   }
-
 }

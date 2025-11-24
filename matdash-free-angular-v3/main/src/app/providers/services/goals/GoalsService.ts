@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -7,31 +7,41 @@ export class GoalsService {
 
   constructor(private http: HttpClient) {}
 
-  // 📌 Crear meta
+  // ============================================================
+  // 📌 CREAR META
+  // ============================================================
   createGoal$(payload: any): Observable<any> {
     return this.http.post('goals', payload);
   }
 
-  // 📌 Obtener metas por usuario
+  // ============================================================
+  // 📌 LISTAR METAS POR USUARIO
+  // ============================================================
   getGoalsByUser$(userId: number): Observable<any[]> {
     return this.http.get<any[]>(`goals/user/${userId}`);
   }
 
-  // 📌 Editar meta COMPLETA
+  // ============================================================
+  // 📌 EDITAR META COMPLETA
+  // ============================================================
   updateGoal$(goalId: number, payload: any): Observable<any> {
     return this.http.put(`goals/${goalId}`, payload);
   }
 
-  // 📌 Eliminar meta
+  // ============================================================
+  // 📌 ELIMINAR META
+  // ============================================================
   deleteGoal$(goalId: number): Observable<any> {
     return this.http.delete(`goals/${goalId}`);
   }
 
-  // 📌 Aportar monto a una meta
+  // ============================================================
+  // 📌 APORTAR MONTO A UNA META
+  // ============================================================
   updateGoalAmount$(goalId: number, amount: number): Observable<any> {
-    return this.http.put(`goals/${goalId}/amount`, null, {
-      params: { amountChange: amount }
-    });
-  }
 
+    const params = new HttpParams().set('amountChange', amount);
+
+    return this.http.put(`goals/${goalId}/amount`, null, { params });
+  }
 }

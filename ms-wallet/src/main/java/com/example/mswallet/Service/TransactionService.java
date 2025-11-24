@@ -50,11 +50,15 @@ public class TransactionService {
     @Transactional
     public TransactionResponseDTO createTransaction(TransactionRequestDTO request) {
 
-        // 1. Verificar Wallet
+        // ------------------------------
+        // 1. Validar Wallet del usuario
+        // ------------------------------
         Wallet wallet = walletRepository.findByUserId(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet no encontrada"));
 
-        // 2. Obtener categoría / subcategoría (permitir null)
+        // ------------------------------
+        // 2. Obtener categoría por ID
+        // ------------------------------
         CategoryDTO category = null;
         SubcategoryDTO subcategory = null;
 
@@ -62,7 +66,7 @@ public class TransactionService {
             try {
                 category = categoryClient.getCategoryById(request.getCategoryId());
             } catch (Exception e) {
-                log.warn("Categoría no encontrada: {}", request.getCategoryId());
+                log.warn("⚠ La categoría {} no existe.", request.getCategoryId());
             }
         }
 
@@ -73,21 +77,25 @@ public class TransactionService {
                         request.getSubcategoryId()
                 );
             } catch (Exception e) {
-                log.warn("Subcategoría no encontrada: {}", request.getSubcategoryId());
+                log.warn("⚠ La subcategoría {} no existe.", request.getSubcategoryId());
             }
         }
 
-        // 3. Evento (opcional)
+        // ------------------------------
+        // 3. Validar EVENTO opcional
+        // ------------------------------
         EventDTO event = null;
         if (request.getEventId() != null) {
             try {
                 event = eventClient.getEventById(request.getEventId());
             } catch (Exception e) {
-                log.warn("Evento no encontrado: {}", request.getEventId());
+                log.warn("⚠ Evento {} no encontrado.", request.getEventId());
             }
         }
 
-        // 4. Crear Transacción
+        // ------------------------------
+        // 4. Crear transacción
+        // ------------------------------
         Transaction transaction = new Transaction();
         transaction.setWalletId(wallet.getId());
         transaction.setUserId(request.getUserId());
@@ -101,24 +109,34 @@ public class TransactionService {
 
         transaction = transactionRepository.save(transaction);
 
+        // ------------------------------
         // 5. Actualizar balance
+        // ------------------------------
         if (request.getType() == Transaction.TransactionType.INCOME) {
             wallet.setBalance(wallet.getBalance().add(request.getAmount()));
         } else {
             wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));
         }
+
         walletRepository.save(wallet);
 
-        // 6. Aportar a una meta (solo gastos)
-        if (request.getGoalId() != null && request.getType() == Transaction.TransactionType.EXPENSE) {
-            goalClient.updateGoalAmount(request.getGoalId(), request.getAmount());
-            log.info("Meta {} actualizada con {}", request.getGoalId(), request.getAmount());
+        // ------------------------------
+        // 6. Aportar a meta (GOAL)
+        // ------------------------------
+        if (request.getGoalId() != null &&
+                request.getType() == Transaction.TransactionType.EXPENSE) {
+
+            try {
+                goalClient.updateGoalAmount(request.getGoalId(), request.getAmount());
+                log.info("✔ Meta {} actualizada con {}", request.getGoalId(), request.getAmount());
+            } catch (Exception e) {
+                log.warn("⚠ No se pudo actualizar la meta {}", request.getGoalId());
+            }
         }
 
-        // ⚠  Ya NO se actualizan eventos aquí (lo hace ms-events)
-        // Esto evita duplicados y llamadas cruzadas
-
+        // ------------------------------
         // 7. Respuesta final
+        // ------------------------------
         return buildTransactionResponse(transaction, category, subcategory, event);
     }
 
@@ -143,58 +161,58 @@ public class TransactionService {
     }
 
     // =====================================================================
-    // ENRIQUECER TRANSACCIÓN (evitar null pointer)
+    // ENRIQUECER TRANSACCIÓN (evitar errores)
     // =====================================================================
-    private TransactionResponseDTO enrichTransaction(Transaction transaction) {
+    private TransactionResponseDTO enrichTransaction(Transaction tx) {
 
         CategoryDTO category = null;
         SubcategoryDTO subcategory = null;
+        EventDTO event = null;
 
-        if (transaction.getCategoryId() != null) {
+        if (tx.getCategoryId() != null) {
             try {
-                category = categoryClient.getCategoryById(transaction.getCategoryId());
+                category = categoryClient.getCategoryById(tx.getCategoryId());
             } catch (Exception ignored) {}
         }
 
-        if (transaction.getCategoryId() != null && transaction.getSubcategoryId() != null) {
+        if (tx.getCategoryId() != null && tx.getSubcategoryId() != null) {
             try {
                 subcategory = categoryClient.getSubcategoryById(
-                        transaction.getCategoryId(),
-                        transaction.getSubcategoryId()
+                        tx.getCategoryId(),
+                        tx.getSubcategoryId()
                 );
             } catch (Exception ignored) {}
         }
 
-        EventDTO event = null;
-        if (transaction.getEventId() != null) {
+        if (tx.getEventId() != null) {
             try {
-                event = eventClient.getEventById(transaction.getEventId());
+                event = eventClient.getEventById(tx.getEventId());
             } catch (Exception ignored) {}
         }
 
-        return buildTransactionResponse(transaction, category, subcategory, event);
+        return buildTransactionResponse(tx, category, subcategory, event);
     }
 
     // =====================================================================
-    // ARMAR RESPUESTA
+    // ARMAR RESPUESTA FINAL
     // =====================================================================
     private TransactionResponseDTO buildTransactionResponse(
-            Transaction transaction,
+            Transaction tx,
             CategoryDTO category,
             SubcategoryDTO subcategory,
             EventDTO event
     ) {
-        TransactionResponseDTO response = new TransactionResponseDTO();
-        response.setId(transaction.getId());
-        response.setWalletId(transaction.getWalletId());
-        response.setUserId(transaction.getUserId());
-        response.setCategory(category);
-        response.setSubcategory(subcategory);
-        response.setEvent(event);
-        response.setType(transaction.getType());
-        response.setAmount(transaction.getAmount());
-        response.setDescription(transaction.getDescription());
-        response.setTransactionDate(transaction.getTransactionDate());
-        return response;
+        TransactionResponseDTO dto = new TransactionResponseDTO();
+        dto.setId(tx.getId());
+        dto.setWalletId(tx.getWalletId());
+        dto.setUserId(tx.getUserId());
+        dto.setCategory(category);
+        dto.setSubcategory(subcategory);
+        dto.setEvent(event);
+        dto.setType(tx.getType());
+        dto.setAmount(tx.getAmount());
+        dto.setDescription(tx.getDescription());
+        dto.setTransactionDate(tx.getTransactionDate());
+        return dto;
     }
 }

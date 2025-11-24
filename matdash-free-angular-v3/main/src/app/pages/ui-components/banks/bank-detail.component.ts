@@ -140,4 +140,22 @@ export class BankDetailComponent implements OnInit {
       }
     });
   }
+  // ===============================
+//  🔥 LOGO ESTÁTICO DE LOS BANCOS
+// ===============================
+  getBankLogo(name: string | undefined): string {
+    if (!name) return 'assets/banks/default.png';
+
+    const key = name.toLowerCase();
+
+    const logos: any = {
+      'yape': 'assets/banks/yape.png',
+      'bbva': 'assets/banks/bbva.png',
+      'bcp': 'assets/banks/bcp.png',
+      'plin': 'assets/banks/plin.png'
+    };
+
+    return logos[key] || 'assets/banks/default.png';
+  }
+
 }

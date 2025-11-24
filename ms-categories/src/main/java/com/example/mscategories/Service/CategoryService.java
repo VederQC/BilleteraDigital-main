@@ -23,13 +23,14 @@ public class CategoryService {
     private final SubcategoryRepository subcategoryRepository;
     private final UserFeignClient userFeignClient;
 
+    private static final String PROTECTED_CATEGORY = "objetivos";
+
     // ------------------------------------------------------------
-    // 🔹 Crear categoría (validando primero que el usuario exista)
+    // 🔹 Crear categoría
     // ------------------------------------------------------------
     @Transactional
     public CategoryResponseDTO createCategory(CategoryRequestDTO request) {
 
-        // Validamos contra ms-auth usando Feign
         try {
             AuthUserDto user = userFeignClient.getUserById(request.getUserId());
             if (user == null) {
@@ -50,9 +51,7 @@ public class CategoryService {
         return mapToResponse(categoryRepository.save(category));
     }
 
-    // ------------------------------------------------------------
-    // 🔹 Obtener categorías por ID de usuario
-    // ------------------------------------------------------------
+    // 🔹 Obtener categorías por usuario
     public List<CategoryResponseDTO> getCategoriesByUser(Long userId) {
         return categoryRepository.findByUserId(userId)
                 .stream()
@@ -60,26 +59,25 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
-    // ------------------------------------------------------------
-    // 🔹 Obtener categoría por ID
-    // ------------------------------------------------------------
+    // 🔹 Obtener una categoría por ID
     public CategoryResponseDTO getCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
         return mapToResponse(category);
     }
 
-    // ------------------------------------------------------------
-    // 🔹 Actualizar una categoría
-    // ------------------------------------------------------------
+    // 🔹 Actualizar categoría
     @Transactional
     public CategoryResponseDTO updateCategory(Long id, CategoryRequestDTO request) {
 
-        // Buscar categoría
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
 
-        // Actualizar campos
+        // 🚫 No editar categoría protegida
+        if (category.getName().equalsIgnoreCase(PROTECTED_CATEGORY)) {
+            throw new IllegalStateException("La categoría 'objetivos' no se puede editar.");
+        }
+
         category.setName(request.getName());
         category.setIcon(request.getIcon());
         category.setColor(request.getColor());
@@ -87,32 +85,30 @@ public class CategoryService {
         return mapToResponse(categoryRepository.save(category));
     }
 
-    // ------------------------------------------------------------
     // 🔹 Eliminar categoría
-    //    Incluye BORRADO DE TODAS SUS SUBCATEGORÍAS
-    // ------------------------------------------------------------
     @Transactional
     public void deleteCategory(Long id) {
 
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
 
-        // Eliminar subcategorías primero
+        // 🚫 No eliminar objetivos
+        if (category.getName().equalsIgnoreCase(PROTECTED_CATEGORY)) {
+            throw new IllegalStateException("La categoría 'objetivos' no se puede eliminar.");
+        }
+
+        // Eliminar subcategorías
         subcategoryRepository.deleteAll(
                 subcategoryRepository.findByCategoryId(id)
         );
 
-        // Eliminar categoría
         categoryRepository.delete(category);
     }
 
-    // ------------------------------------------------------------
-    // 🔹 Crear subcategoría dentro de una categoría
-    // ------------------------------------------------------------
+    // 🔹 Crear subcategoría
     @Transactional
     public SubcategoryResponseDTO createSubcategory(Long categoryId, SubcategoryRequestDTO request) {
 
-        // Verificamos que la categoría exista
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada"));
 
@@ -125,9 +121,7 @@ public class CategoryService {
         return mapSubcategory(subcategoryRepository.save(sub));
     }
 
-    // ------------------------------------------------------------
-    // 🔹 Listar todas las subcategorías de una categoría
-    // ------------------------------------------------------------
+    // 🔹 Listar subcategorías
     public List<SubcategoryResponseDTO> getSubcategories(Long categoryId) {
         return subcategoryRepository.findByCategoryId(categoryId)
                 .stream()
@@ -135,19 +129,16 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
-    // ------------------------------------------------------------
-    // 🔹 Obtener subcategoría por ID dentro de una categoría
-    // ------------------------------------------------------------
+    // 🔹 Obtener subcategoría por ID
     public SubcategoryResponseDTO getSubcategoryById(Long categoryId, Long subId) {
         Subcategory sub = subcategoryRepository.findById(subId)
-                .filter(s -> s.getCategory().getId().equals(categoryId)) // Validación adicional
+                .filter(s -> s.getCategory().getId().equals(categoryId))
                 .orElseThrow(() -> new ResourceNotFoundException("Subcategoría no encontrada"));
+
         return mapSubcategory(sub);
     }
 
-    // ------------------------------------------------------------
     // 🔹 Actualizar subcategoría
-    // ------------------------------------------------------------
     @Transactional
     public SubcategoryResponseDTO updateSubcategory(Long categoryId, Long subId, SubcategoryRequestDTO request) {
 
@@ -160,9 +151,7 @@ public class CategoryService {
         return mapSubcategory(subcategoryRepository.save(sub));
     }
 
-    // ------------------------------------------------------------
     // 🔹 Eliminar subcategoría
-    // ------------------------------------------------------------
     @Transactional
     public void deleteSubcategory(Long categoryId, Long subId) {
 
@@ -174,8 +163,15 @@ public class CategoryService {
     }
 
     // ------------------------------------------------------------
-    // 🔹 Mapper de categoría
+    // 🔹 Buscar categoría por NOMBRE
+    //    (para GoalsService ✔)
     // ------------------------------------------------------------
+    public Category getCategoryByName(String name) {
+        return categoryRepository.findByNameIgnoreCase(name)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada: " + name));
+    }
+
+    // 🔹 Mapper categoría
     private CategoryResponseDTO mapToResponse(Category c) {
         return CategoryResponseDTO.builder()
                 .id(c.getId())
@@ -187,9 +183,7 @@ public class CategoryService {
                 .build();
     }
 
-    // ------------------------------------------------------------
-    // 🔹 Mapper de subcategoría
-    // ------------------------------------------------------------
+    // 🔹 Mapper subcategoría
     private SubcategoryResponseDTO mapSubcategory(Subcategory s) {
         return SubcategoryResponseDTO.builder()
                 .id(s.getId())

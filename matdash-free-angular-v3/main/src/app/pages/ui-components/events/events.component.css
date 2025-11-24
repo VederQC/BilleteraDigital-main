@@ -149,3 +149,89 @@
   background: #B52A37;
   transform: translateY(-2px);
 }
+/* ============================== */
+/* 💜  SOLO FORMULARIO DEL MODAL  */
+/* ============================== */
+
+.dialog-container {
+  background: #ffffff;
+  padding: 26px;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 680px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.dialog-title {
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 18px;
+  color: #4c2deb;
+}
+
+/* Campos */
+.field {
+  width: 100%;
+  margin-bottom: 16px !important;
+}
+
+/* Material morado claro */
+.mat-form-field-appearance-fill .mat-form-field-flex {
+  background: #f5f0ff !important; /* Morado ultra claro */
+  border-radius: 14px !important;
+  padding: 6px 12px !important;
+}
+
+.mat-form-field.mat-focused .mat-form-field-flex {
+  background: #ece2ff !important;
+}
+
+.mat-input-element {
+  color: #333 !important;
+  font-weight: 500 !important;
+}
+
+textarea.mat-input-element {
+  resize: none;
+}
+
+/* Fila de fechas */
+.date-row {
+  display: flex;
+  gap: 18px;
+}
+
+.date-row .field {
+  flex: 1;
+}
+
+/* Botones */
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.dialog-actions button {
+  font-weight: 600;
+  border-radius: 10px !important;
+}
+
+/* Guardar */
+.dialog-actions button.mat-flat-button {
+  background: #4c2deb !important;
+  color: white !important;
+  padding: 8px 22px !important;
+  box-shadow: 0 4px 14px rgba(76,45,235,0.4);
+}
+
+.dialog-actions button.mat-flat-button:hover {
+  background: #3a21c9 !important;
+}
+
+/* Cancelar */
+.dialog-actions button.mat-button {
+  color: #4c2deb !important;
+}
+

@@ -22,7 +22,8 @@ import { GoalsService } from 'src/app/providers/services/goals/GoalsService';
     MatSelectModule,
     MatButtonModule
   ],
-  templateUrl: './transaction-dialog.component.html'
+  templateUrl: './transaction-dialog.component.html',
+  styleUrls: ['./transaction-dialog.component.css'],
 })
 export class TransactionDialogComponent implements OnInit {
 

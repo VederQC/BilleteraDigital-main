@@ -1,10 +1,10 @@
-<h2 mat-dialog-title>Nueva Transacción</h2>
+<h2 mat-dialog-title class="dialog-title">Nueva Transacción</h2>
 
-<mat-dialog-content>
+<mat-dialog-content class="dialog-body">
   <form [formGroup]="txForm">
 
-    <!-- TIPO -->
-    <mat-form-field appearance="outline" class="w-100">
+    <!-- Tipo -->
+    <mat-form-field appearance="outline" class="input-field">
       <mat-label>Tipo</mat-label>
       <mat-select formControlName="type">
         <mat-option value="INCOME">Ingreso</mat-option>
@@ -12,8 +12,8 @@
       </mat-select>
     </mat-form-field>
 
-    <!-- CATEGORÍA -->
-    <mat-form-field appearance="outline" class="w-100">
+    <!-- Categoría -->
+    <mat-form-field appearance="outline" class="input-field">
       <mat-label>Categoría</mat-label>
       <mat-select formControlName="categoryId">
         <mat-option *ngFor="let c of categories" [value]="c.id">
@@ -22,8 +22,8 @@
       </mat-select>
     </mat-form-field>
 
-    <!-- SUBCATEGORÍA -->
-    <mat-form-field appearance="outline" class="w-100">
+    <!-- Subcategoría -->
+    <mat-form-field appearance="outline" class="input-field">
       <mat-label>Subcategoría</mat-label>
       <mat-select formControlName="subcategoryId">
         <mat-option *ngFor="let s of subcategories" [value]="s.id">
@@ -32,8 +32,8 @@
       </mat-select>
     </mat-form-field>
 
-    <!-- META (GOAL) -->
-    <mat-form-field appearance="outline" class="w-100">
+    <!-- Meta -->
+    <mat-form-field appearance="outline" class="input-field">
       <mat-label>Meta (Opcional)</mat-label>
       <mat-select formControlName="goalId">
         <mat-option [value]="null">Sin meta</mat-option>
@@ -43,30 +43,34 @@
       </mat-select>
     </mat-form-field>
 
-    <!-- EVENTO -->
-    <mat-form-field appearance="outline" class="w-100">
-      <mat-label>Evento (opcional)</mat-label>
-      <input matInput type="number" formControlName="eventId" />
+    <!-- Evento -->
+    <mat-form-field appearance="outline" class="input-field">
+      <mat-label>Evento (Opcional)</mat-label>
+      <input matInput type="number" formControlName="eventId">
     </mat-form-field>
 
-    <!-- MONTO -->
-    <mat-form-field appearance="outline" class="w-100">
+    <!-- Monto -->
+    <mat-form-field appearance="outline" class="input-field">
       <mat-label>Monto</mat-label>
-      <input matInput type="number" formControlName="amount" />
+      <input matInput type="number" formControlName="amount">
     </mat-form-field>
 
-    <!-- DESCRIPCIÓN -->
-    <mat-form-field appearance="outline" class="w-100">
+    <!-- Descripción -->
+    <mat-form-field appearance="outline" class="input-field">
       <mat-label>Descripción</mat-label>
-      <input matInput formControlName="description" />
+      <input matInput formControlName="description">
     </mat-form-field>
 
   </form>
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">Cancelar</button>
-  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="txForm.invalid">
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button class="cancel-btn" (click)="onCancel()">
+    Cancelar
+  </button>
+
+  <button mat-raised-button color="primary" class="save-btn"
+          (click)="onSubmit()" [disabled]="txForm.invalid">
     Guardar
   </button>
 </mat-dialog-actions>

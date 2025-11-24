@@ -1,95 +1,88 @@
-<mat-card class="cardWithShadow">
-  <mat-card-content>
+<mat-card class="bank-card">
 
-    <!-- ENCABEZADO -->
-    <div class="bank-header">
-      <div class="bank-info">
-        <h2>{{ bank?.name }}</h2>
-        <p class="icon">{{ bank?.icon }}</p>
+  <!-- ENCABEZADO DEL BANCO -->
+  <div class="bank-header">
+    <div class="bank-info">
+      <h2>{{ bank?.name }}</h2>
 
-        <!-- ⭐ SALDO TOTAL DEL BANCO -->
-        <h3 class="bank-balance">
-          Saldo total: PEN {{ bankBalance | number:'1.2-2' }}
-        </h3>
-
+      <div class="bank-icon-container">
+        <img [src]="'/assets/icons/' + bank?.icon" class="bank-icon" alt="icono">
       </div>
 
-      <div class="actions">
-        <button mat-raised-button color="primary" (click)="toggleAddForm()">
-          + Agregar dinero
-        </button>
+      <h3 class="bank-balance">
+        Saldo disponible:
+        <span class="amount">PEN {{ bankBalance | number:'1.2-2' }}</span>
+      </h3>
+    </div>
 
-        <button mat-raised-button color="accent" (click)="toggleTransferForm()">
-          Transferir a Wallet
-        </button>
+    <div class="actions">
+      <button mat-stroked-button color="primary" (click)="toggleAddForm()">
+        + Agregar dinero
+      </button>
+
+      <button mat-flat-button color="accent" (click)="toggleTransferForm()">
+        Transferir a Wallet
+      </button>
+    </div>
+  </div>
+
+  <!-- FORM AGREGAR -->
+  <div class="form-container" *ngIf="showAddForm">
+    <h4>Agregar dinero</h4>
+
+    <mat-form-field appearance="outline" class="input-full">
+      <mat-label>Monto</mat-label>
+      <input matInput type="number" [(ngModel)]="amount">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="input-full">
+      <mat-label>Descripción</mat-label>
+      <input matInput [(ngModel)]="description">
+    </mat-form-field>
+
+    <div class="form-buttons">
+      <button mat-flat-button color="primary" (click)="submitIncome()">Guardar</button>
+      <button mat-button (click)="toggleAddForm()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- FORM TRANSFERIR -->
+  <div class="form-container" *ngIf="showTransferForm">
+    <h4>Transferir dinero a Wallet</h4>
+
+    <mat-form-field appearance="outline" class="input-full">
+      <mat-label>Monto a transferir</mat-label>
+      <input matInput type="number" [(ngModel)]="transferAmount">
+    </mat-form-field>
+
+    <div class="form-buttons">
+      <button mat-flat-button color="accent" (click)="submitTransfer()">Transferir</button>
+      <button mat-button (click)="toggleTransferForm()">Cancelar</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- HISTORIAL DE OPERACIONES -->
+  <h3 class="history-title">Historial de movimientos</h3>
+
+  <div class="history-list" *ngIf="incomes.length > 0">
+    <div *ngFor="let item of incomes" class="history-item"
+         [ngClass]="{ 'positive': item.amount > 0, 'negative': item.amount < 0 }">
+
+      <div class="info">
+        <p class="description">{{ item.description }}</p>
+        <p class="date">{{ item.createdAt | date:'medium' }}</p>
+      </div>
+
+      <div class="amount"
+           [ngClass]="{ 'positive': item.amount > 0, 'negative': item.amount < 0 }">
+
+        {{ item.amount > 0 ? '+' : '' }}PEN {{ item.amount | number:'1.2-2' }}
       </div>
     </div>
+  </div>
 
-    <!-- ⭐ FORMULARIO AGREGAR DINERO -->
-    <div class="bank-form" *ngIf="showAddForm">
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Monto</mat-label>
-        <input matInput type="number" [(ngModel)]="amount">
-      </mat-form-field>
+  <p *ngIf="incomes.length === 0" class="empty">No hay movimientos aún.</p>
 
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Descripción</mat-label>
-        <input matInput [(ngModel)]="description">
-      </mat-form-field>
-
-      <button mat-raised-button color="primary" (click)="submitIncome()">
-        Guardar ingreso
-      </button>
-
-      <button mat-button (click)="toggleAddForm()">
-        Cancelar
-      </button>
-    </div>
-
-    <!-- ⭐ FORMULARIO TRANSFERIR -->
-    <div class="bank-form" *ngIf="showTransferForm">
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>Monto a transferir</mat-label>
-        <input matInput type="number" [(ngModel)]="transferAmount">
-      </mat-form-field>
-
-      <button mat-raised-button color="accent" (click)="submitTransfer()">
-        Transferir
-      </button>
-
-      <button mat-button (click)="toggleTransferForm()">
-        Cancelar
-      </button>
-    </div>
-
-    <hr class="divider"/>
-
-    <!-- HISTORIAL -->
-    <h3>Historial de Ingresos</h3>
-
-    <table class="history-table" *ngIf="incomes.length > 0">
-      <thead>
-        <tr>
-          <th>Monto</th>
-          <th>Descripción</th>
-          <th>Fecha</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr *ngFor="let item of incomes"
-            [ngClass]="{ 'ingreso': item.amount > 0, 'salida': item.amount < 0 }">
-
-          <td>PEN {{ item.amount | number:'1.2-2' }}</td>
-          <td>{{ item.description }}</td>
-          <td>{{ item.createdAt | date:'medium' }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p *ngIf="incomes.length === 0" class="empty-text">
-      No hay ingresos registrados en este banco.
-    </p>
-
-  </mat-card-content>
 </mat-card>

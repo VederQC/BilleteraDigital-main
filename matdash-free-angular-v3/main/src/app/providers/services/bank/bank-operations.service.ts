@@ -72,5 +72,6 @@ export class BankOperationsService {
   public getBankBalance$(userId: number, bankId: number): Observable<UserBankBalance> {
     return this.http.get<UserBankBalance>(`${this.OPS_URL}/balance/${userId}/${bankId}`);
   }
+  
 
 }

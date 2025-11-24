@@ -12,6 +12,7 @@ import { TokenModels } from 'src/app/core/models/token-models';
   standalone: true,
   imports: [RouterModule, MaterialModule, FormsModule, ReactiveFormsModule],
   templateUrl: './side-login.component.html',
+  styleUrls: ['./side-login.component.css'],
 })
 export class AppSideLoginComponent {
 

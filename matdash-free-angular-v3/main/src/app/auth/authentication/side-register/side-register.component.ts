@@ -11,6 +11,8 @@ import { AuthService } from 'src/app/providers/services/auth/auth.service';
   selector: 'app-side-register',
   imports: [RouterModule, MaterialModule, FormsModule, ReactiveFormsModule],
   templateUrl: './side-register.component.html',
+  styleUrls: ['./side-register.component.css'],
+  
 })
 export class AppSideRegisterComponent {
   options = this.settings.getOptions();

@@ -47,6 +47,24 @@ spring:
           predicates:
             - Path=/auth/**
           filters: []
+        - id: ms-pcge
+          uri: lb://ms-pcge
+          predicates:
+            - Path=/pcge/**
+          filters:
+            - name: AuthFilter
+        - id: ms-operaciones
+          uri: lb://ms-operaciones
+          predicates:
+            - Path=/operaciones/**
+          filters:
+            - name: AuthFilter
+        - id: ms-contabilidad
+          uri: lb://ms-contabilidad
+          predicates:
+            - Path=/asientos/**
+          filters:
+            - name: AuthFilter
 
 
       globalcors:

@@ -1,0 +1,80 @@
+.container {
+  width: 90%;
+  margin: 25px auto;
+  padding: 20px 30px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: #303f9f;
+}
+
+/* FILTRO SELECT */
+.filters-row {
+  margin-bottom: 15px;
+}
+
+.filters-row select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+  font-size: 15px;
+  background: white;
+}
+
+/* BUSCADOR */
+.search-box {
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+  font-size: 15px;
+}
+
+/* TABLA */
+.table-container {
+  max-height: 450px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.table-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #9c27b0;
+  border-radius: 4px;
+}
+
+.pcge-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pcge-table th {
+  background: #303f9f;
+  color: white;
+  padding: 10px;
+  text-align: left;
+  position: sticky;
+  top: 0;
+}
+
+.pcge-table td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.pcge-table tr:hover {
+  background: #f6f6f6;
+}

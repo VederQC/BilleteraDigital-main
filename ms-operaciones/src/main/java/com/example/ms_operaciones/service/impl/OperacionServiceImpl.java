@@ -11,6 +11,7 @@ import com.example.ms_operaciones.entity.OperationType;
 import com.example.ms_operaciones.feign.ContabilidadClient;
 import com.example.ms_operaciones.feign.WalletFeignClient;
 import com.example.ms_operaciones.repository.DocumentRepository;
+import com.example.ms_operaciones.service.ClienteService;
 import com.example.ms_operaciones.service.OperacionService;
 
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class OperacionServiceImpl implements OperacionService {
     private final DocumentRepository documentRepository;
     private final ContabilidadClient contabilidadClient;
     private final WalletFeignClient walletFeignClient;
+    private final ClienteService clienteService;
 
     // ============================================================
     //      OPERACIONES PRINCIPALES
@@ -36,16 +38,27 @@ public class OperacionServiceImpl implements OperacionService {
 
     @Override
     public Document registrarVenta(VentaRequest request) {
+
+        // VALIDAR CLIENTE
+        clienteService.obtenerCliente(request.getClienteId());
+
         return procesarOperacionConItems(request, OperationType.VENTA, "INCOME");
     }
 
     @Override
     public Document registrarCompra(VentaRequest request) {
+
+        // VALIDAR CLIENTE
+        clienteService.obtenerCliente(request.getClienteId());
+
         return procesarOperacionConItems(request, OperationType.COMPRA, "EXPENSE");
     }
 
     @Override
     public Document registrarCobro(OperacionSimpleRequest request) {
+
+        // VALIDAR CLIENTE
+        clienteService.obtenerCliente(request.getClienteId());
 
         Document doc = Document.builder()
                 .tipo(OperationType.COBRO)
@@ -59,10 +72,12 @@ public class OperacionServiceImpl implements OperacionService {
 
         Document saved = documentRepository.save(doc);
 
-        enviarTransaccionWallet(request.getClienteId(),
+        enviarTransaccionWallet(
+                request.getClienteId(),
                 request.getMonto(),
                 "COBRO " + saved.getId(),
-                "INCOME");
+                "INCOME"
+        );
 
         contabilidadClient.generarAsiento(new NuevoAsientoRequest(saved));
         return saved;
@@ -70,6 +85,9 @@ public class OperacionServiceImpl implements OperacionService {
 
     @Override
     public Document registrarPago(OperacionSimpleRequest request) {
+
+        // VALIDAR CLIENTE
+        clienteService.obtenerCliente(request.getClienteId());
 
         Document doc = Document.builder()
                 .tipo(OperationType.PAGO)
@@ -83,14 +101,20 @@ public class OperacionServiceImpl implements OperacionService {
 
         Document saved = documentRepository.save(doc);
 
-        enviarTransaccionWallet(request.getClienteId(),
+        enviarTransaccionWallet(
+                request.getClienteId(),
                 request.getMonto(),
                 "PAGO " + saved.getId(),
-                "EXPENSE");
+                "EXPENSE"
+        );
 
         contabilidadClient.generarAsiento(new NuevoAsientoRequest(saved));
         return saved;
     }
+
+    // ============================================================
+    //      MÉTODO GENERAL PARA OPERACIONES CON ITEMS
+    // ============================================================
 
     private Document procesarOperacionConItems(VentaRequest request, OperationType tipo, String tipoWallet) {
 
@@ -129,15 +153,21 @@ public class OperacionServiceImpl implements OperacionService {
 
         Document saved = documentRepository.save(documento);
 
-        enviarTransaccionWallet(saved.getClienteId(),
+        enviarTransaccionWallet(
+                saved.getClienteId(),
                 total,
                 tipo.name() + " DocID: " + saved.getId(),
-                tipoWallet);
+                tipoWallet
+        );
 
         contabilidadClient.generarAsiento(new NuevoAsientoRequest(saved));
 
         return saved;
     }
+
+    // ============================================================
+    //      ENVÍO AL MS-WALLET
+    // ============================================================
 
     private void enviarTransaccionWallet(Long userId, BigDecimal monto, String descripcion, String tipo) {
 
@@ -161,8 +191,7 @@ public class OperacionServiceImpl implements OperacionService {
 
     @Override
     public Document obtenerPorId(Long id) {
-        return documentRepository.findById(id)
-                .orElse(null);
+        return documentRepository.findById(id).orElse(null);
     }
 
     @Override

@@ -27,8 +27,7 @@ spring:
           filters:
             - name: AuthFilter
 
-        - id: ms-wallet-service
-          uri: lb://ms-wallet-service
+
         - id: ms-wallet-service
           uri: lb://ms-wallet-service
           predicates:
@@ -39,7 +38,7 @@ spring:
           filters:
             - AuthFilter
 
-        
+
 
         - id: ms-events-service
           uri: lb://ms-events-service

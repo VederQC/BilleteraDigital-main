@@ -56,7 +56,7 @@ spring:
         - id: ms-operaciones
           uri: lb://ms-operaciones
           predicates:
-            - Path=/operaciones/**
+            - Path=/operaciones/**,/clientes/**
           filters:
             - name: AuthFilter
         - id: ms-contabilidad

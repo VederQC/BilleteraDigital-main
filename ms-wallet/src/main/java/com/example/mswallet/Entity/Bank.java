@@ -19,5 +19,6 @@ public class Bank {
     private Long id;
 
     private String name;   // Yape, Plin, BBVA, BCP, etc.
-    private String icon;   // Opcional
+    private String icon;
+    private String mariobbburro;// Opcional
 }

@@ -215,4 +215,34 @@ public class TransactionService {
         dto.setTransactionDate(tx.getTransactionDate());
         return dto;
     }
+    @Transactional
+    public void registrarDesdeOperacion(TransactionToWalletDTO op) {
+
+        Wallet wallet = walletRepository.findByUserId(op.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Wallet no encontrada"));
+
+        // Registrar transacción
+        Transaction tx = new Transaction();
+        tx.setUserId(op.getUserId());
+        tx.setWalletId(wallet.getId());
+        tx.setAmount(op.getAmount());
+        tx.setDescription(op.getDescription());
+        tx.setTransactionDate(LocalDateTime.now());
+
+        if (op.getType().equals("INCOME")) {
+            tx.setType(Transaction.TransactionType.INCOME);
+            wallet.setBalance(wallet.getBalance().add(op.getAmount()));
+        } else {
+            tx.setType(Transaction.TransactionType.EXPENSE);
+
+            if (wallet.getBalance().compareTo(op.getAmount()) < 0) {
+                throw new IllegalStateException("Fondos insuficientes en la billetera");
+            }
+            wallet.setBalance(wallet.getBalance().subtract(op.getAmount()));
+        }
+
+        walletRepository.save(wallet);
+        transactionRepository.save(tx);
+    }
+
 }

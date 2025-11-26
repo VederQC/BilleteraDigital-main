@@ -36,8 +36,9 @@ export const navItems: NavItem[] = [
 },
 {
   displayName: 'Plan contable',
-  iconName: 'solar:layers-minimalistic-bold-duotone,'
-  
+  iconName: 'solar:layers-minimalistic-bold-duotone,',
+  route : '/app/ui-components/plancontable'
+
 }
 
 
